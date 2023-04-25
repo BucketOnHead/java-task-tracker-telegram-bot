@@ -15,6 +15,7 @@
 
     <modules>
         <module>dispatcher</module>
+        <module>common</module>
     </modules>
 
     <properties>
