@@ -11,12 +11,22 @@
     <artifactId>task-tracker-telegram-bot-dispatcher</artifactId>
 
     <properties>
+        <common-rabbitmq.version>1.0-SNAPSHOT</common-rabbitmq.version>
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
     <dependencies>
+        <dependency>
+            <groupId>com.github.bucketonhead</groupId>
+            <artifactId>task-tracker-telegram-bot-common-rabbitmq</artifactId>
+            <version>${common-rabbitmq.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-amqp</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
