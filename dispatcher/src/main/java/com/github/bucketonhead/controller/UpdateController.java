@@ -55,12 +55,6 @@ public class UpdateController {
 
     private void processTextMessage(Update update) {
         updateProducer.produce(RabbitQueue.TEXT_MESSAGE_UPDATE, update);
-        setTextMessageReceivedView(update);
-    }
-
-    private void setTextMessageReceivedView(Update update) {
-        String text = "Получено сообщение с текстом!";
-        setView(MessageUtils.buildTextMessage(update, text));
     }
 
     private void setUnsupportedMessageTypeView(Update update) {
