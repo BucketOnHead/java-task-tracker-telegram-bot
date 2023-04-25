@@ -28,7 +28,7 @@ public class UpdateController {
         }
 
         if (update.hasMessage()) {
-            distributeMessagesByType(update);
+            distributeMessageByType(update);
         } else {
             log.error("Unsupported message type is received: " + update);
         }
@@ -40,7 +40,7 @@ public class UpdateController {
                 sendMessage.getText(), sendMessage.getChatId());
     }
 
-    private void distributeMessagesByType(Update update) {
+    private void distributeMessageByType(Update update) {
         var message = update.getMessage();
         if (message.hasText()) {
             log.debug("Получено сообщение[text='{}'] от пользователя[id={}]",
