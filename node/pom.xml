@@ -11,6 +11,7 @@
     <artifactId>task-tracker-telegram-bot-node</artifactId>
 
     <properties>
+        <common-jpa.version>1.0-SNAPSHOT</common-jpa.version>
         <common-rabbitmq.version>1.0-SNAPSHOT</common-rabbitmq.version>
         <hibernate-types-52.version>2.2.2</hibernate-types-52.version>
         <maven.compiler.source>11</maven.compiler.source>
@@ -20,6 +21,11 @@
     </properties>
 
     <dependencies>
+        <dependency>
+            <groupId>com.github.bucketonhead</groupId>
+            <artifactId>task-tracker-telegram-bot-common-jpa</artifactId>
+            <version>${common-jpa.version}</version>
+        </dependency>
         <dependency>
             <groupId>com.github.bucketonhead</groupId>
             <artifactId>task-tracker-telegram-bot-common-rabbitmq</artifactId>
