@@ -7,6 +7,7 @@ import com.github.bucketonhead.entity.RawData;
 import com.github.bucketonhead.entity.enums.AppUserState;
 import com.github.bucketonhead.service.MainService;
 import com.github.bucketonhead.service.ProducerService;
+import com.github.bucketonhead.service.enums.ServiceCommand;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -25,15 +26,57 @@ public class MainServiceImpl implements MainService {
     @Override
     public void processTextMessage(Update update) {
         saveRawData(update);
-        var textMessage = update.getMessage();
-        var tgUser = textMessage.getFrom();
-        var appUser = findOrSaveAppUser(tgUser);
+        var appUser = findOrSaveAppUser(update.getMessage().getFrom());
+        var text = update.getMessage().getText();
+        var output = "";
 
-        var botMessage = SendMessage.builder()
-                .chatId(textMessage.getChatId())
-                .text("Сообщение получено! 🙂")
+        var serviceCommand = ServiceCommand.fromValue(text);
+        if (ServiceCommand.CANCEL.equals(serviceCommand)) {
+            output = cancelProcess(appUser);
+        } else if (AppUserState.BASIC_STATE.equals(appUser.getState())) {
+            output = processBasicStateCommand(appUser, text);
+        } else if (AppUserState.WAIT_FOR_EMAIL_STATE.equals(appUser.getState())) {
+            // TODO: реализовать после добавления email-сервиса
+        } else {
+            log.error("Unknown user state: " + appUser.getState());
+            output = "Неизвестная ошибка! Введите /cancel и попробуйте снова!";
+        }
+
+        var chatId = update.getMessage().getChatId();
+        sendAnswer(output, chatId);
+    }
+
+    private String processBasicStateCommand(AppUser appUser, String text) {
+        var serviceCommand = ServiceCommand.fromValue(text);
+        if (serviceCommand == null) {
+            return "⚠  Ошибка\n\nКоманда не распознана! " +
+                    "Чтобы посмотреть список доступных команд используйте /help";
+        }
+
+        if (ServiceCommand.HELP.equals(serviceCommand)) {
+            return "Список доступных команд:\n\n"
+                    + "/cancel - отмена выполнения текущей команды";
+        } else if (ServiceCommand.START.equals(serviceCommand)) {
+            return "Приветствую! Чтобы посмотреть список доступных используйте /help";
+        } else {
+            return "Ой, если вы видите это сообщение - " +
+                    "значит разработчик забыл подключить эту функциональность, " +
+                    "попробуйте позже";
+        }
+    }
+
+    private String cancelProcess(AppUser appUser) {
+        appUser.setState(AppUserState.BASIC_STATE);
+        appUserDAO.save(appUser);
+        return "Команда отменена!";
+    }
+
+    private void sendAnswer(String text, Long chatId) {
+        SendMessage sendMessage = SendMessage.builder()
+                .chatId(chatId)
+                .text(text)
                 .build();
-        producerService.producerAnswer(botMessage);
+        producerService.producerAnswer(sendMessage);
     }
 
     private void saveRawData(Update update) {
