@@ -4,7 +4,7 @@ import com.github.bucketonhead.dao.AppUserJpaRepository;
 import com.github.bucketonhead.dao.RawDataDAO;
 import com.github.bucketonhead.entity.AppUser;
 import com.github.bucketonhead.entity.RawData;
-import com.github.bucketonhead.entity.enums.AppUserState;
+import com.github.bucketonhead.entity.enums.BotState;
 import com.github.bucketonhead.service.MainService;
 import com.github.bucketonhead.service.ProducerService;
 import com.github.bucketonhead.service.enums.ServiceCommand;
@@ -33,9 +33,9 @@ public class MainServiceImpl implements MainService {
         var serviceCommand = ServiceCommand.fromValue(text);
         if (ServiceCommand.CANCEL.equals(serviceCommand)) {
             output = cancelProcess(appUser);
-        } else if (AppUserState.BASIC_STATE.equals(appUser.getState())) {
+        } else if (BotState.BASIC_STATE.equals(appUser.getState())) {
             output = processBasicStateCommand(appUser, text);
-        } else if (AppUserState.WAIT_FOR_EMAIL_STATE.equals(appUser.getState())) {
+        } else if (BotState.WAIT_FOR_EMAIL_STATE.equals(appUser.getState())) {
             // TODO: реализовать после добавления email-сервиса
         } else {
             log.error("Unknown user state: " + appUser.getState());
@@ -66,7 +66,7 @@ public class MainServiceImpl implements MainService {
     }
 
     private String cancelProcess(AppUser appUser) {
-        appUser.setState(AppUserState.BASIC_STATE);
+        appUser.setState(BotState.BASIC_STATE);
         appUserJpaRepository.save(appUser);
         return "Команда отменена!";
     }
@@ -96,7 +96,7 @@ public class MainServiceImpl implements MainService {
                     .username(tgUser.getUserName())
                     // TODO: поменять на false после реализации email-сервиса
                     .isActive(Boolean.TRUE)
-                    .state(AppUserState.BASIC_STATE)
+                    .state(BotState.BASIC_STATE)
                     .build();
             persistenceAppUser = appUserJpaRepository.save(transientAppUser);
         }
