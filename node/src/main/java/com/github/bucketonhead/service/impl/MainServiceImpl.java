@@ -1,6 +1,6 @@
 package com.github.bucketonhead.service.impl;
 
-import com.github.bucketonhead.dao.AppUserDAO;
+import com.github.bucketonhead.dao.AppUserJpaRepository;
 import com.github.bucketonhead.dao.RawDataDAO;
 import com.github.bucketonhead.entity.AppUser;
 import com.github.bucketonhead.entity.RawData;
@@ -21,7 +21,7 @@ import org.telegram.telegrambots.meta.api.objects.User;
 public class MainServiceImpl implements MainService {
     private final ProducerService producerService;
     private final RawDataDAO rawDataDAO;
-    private final AppUserDAO appUserDAO;
+    private final AppUserJpaRepository appUserJpaRepository;
 
     @Override
     public void processTextMessage(Update update) {
@@ -67,7 +67,7 @@ public class MainServiceImpl implements MainService {
 
     private String cancelProcess(AppUser appUser) {
         appUser.setState(AppUserState.BASIC_STATE);
-        appUserDAO.save(appUser);
+        appUserJpaRepository.save(appUser);
         return "Команда отменена!";
     }
 
@@ -87,7 +87,7 @@ public class MainServiceImpl implements MainService {
     }
 
     private AppUser findOrSaveAppUser(User tgUser) {
-        AppUser persistenceAppUser = appUserDAO.findByTelegramUserId(tgUser.getId());
+        AppUser persistenceAppUser = appUserJpaRepository.findByTelegramUserId(tgUser.getId());
         if (persistenceAppUser == null) {
             AppUser transientAppUser = AppUser.builder()
                     .telegramUserId(tgUser.getId())
@@ -98,7 +98,7 @@ public class MainServiceImpl implements MainService {
                     .isActive(Boolean.TRUE)
                     .state(AppUserState.BASIC_STATE)
                     .build();
-            persistenceAppUser = appUserDAO.save(transientAppUser);
+            persistenceAppUser = appUserJpaRepository.save(transientAppUser);
         }
         return persistenceAppUser;
     }
