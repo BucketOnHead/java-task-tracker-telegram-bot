@@ -1,4 +1,4 @@
-package com.github.bucketonhead.service;
+package com.github.bucketonhead.service.rabbitmq;
 
 import com.github.bucketonhead.constants.RabbitQueue;
 import org.telegram.telegrambots.meta.api.objects.Update;

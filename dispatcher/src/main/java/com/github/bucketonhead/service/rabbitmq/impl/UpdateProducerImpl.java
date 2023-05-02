@@ -1,6 +1,6 @@
-package com.github.bucketonhead.service.impl;
+package com.github.bucketonhead.service.rabbitmq.impl;
 
-import com.github.bucketonhead.service.UpdateProducer;
+import com.github.bucketonhead.service.rabbitmq.UpdateProducer;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;

@@ -1,6 +1,6 @@
 package com.github.bucketonhead.controller;
 
-import com.github.bucketonhead.service.UpdateProducer;
+import com.github.bucketonhead.service.rabbitmq.UpdateProducer;
 import com.github.bucketonhead.utils.MessageUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Lazy;

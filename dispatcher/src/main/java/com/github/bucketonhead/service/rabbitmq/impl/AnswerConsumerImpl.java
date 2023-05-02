@@ -1,8 +1,8 @@
-package com.github.bucketonhead.service.impl;
+package com.github.bucketonhead.service.rabbitmq.impl;
 
 import com.github.bucketonhead.constants.RabbitQueue;
 import com.github.bucketonhead.controller.UpdateController;
-import com.github.bucketonhead.service.AnswerConsumer;
+import com.github.bucketonhead.service.rabbitmq.AnswerConsumer;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
