@@ -1,7 +1,7 @@
-package com.github.bucketonhead.service.impl;
+package com.github.bucketonhead.service.rabbitmq.impl;
 
 import com.github.bucketonhead.constants.RabbitQueue;
-import com.github.bucketonhead.service.ConsumerService;
+import com.github.bucketonhead.service.rabbitmq.ConsumerService;
 import com.github.bucketonhead.service.MainService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

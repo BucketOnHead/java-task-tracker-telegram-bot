@@ -6,7 +6,7 @@ import com.github.bucketonhead.entity.AppUser;
 import com.github.bucketonhead.entity.RawData;
 import com.github.bucketonhead.entity.enums.BotState;
 import com.github.bucketonhead.service.MainService;
-import com.github.bucketonhead.service.ProducerService;
+import com.github.bucketonhead.service.rabbitmq.ProducerService;
 import com.github.bucketonhead.service.enums.ServiceCommand;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
