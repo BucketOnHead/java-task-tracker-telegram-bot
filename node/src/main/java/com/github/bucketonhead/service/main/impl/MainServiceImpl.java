@@ -1,13 +1,13 @@
-package com.github.bucketonhead.service.impl;
+package com.github.bucketonhead.service.main.impl;
 
 import com.github.bucketonhead.dao.AppUserJpaRepository;
 import com.github.bucketonhead.dao.RawDataJpaRepository;
 import com.github.bucketonhead.entity.AppUser;
 import com.github.bucketonhead.entity.RawData;
 import com.github.bucketonhead.entity.enums.BotState;
-import com.github.bucketonhead.service.MainService;
+import com.github.bucketonhead.service.main.MainService;
 import com.github.bucketonhead.service.rabbitmq.ProducerService;
-import com.github.bucketonhead.service.enums.ServiceCommand;
+import com.github.bucketonhead.service.main.enums.ServiceCommand;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
