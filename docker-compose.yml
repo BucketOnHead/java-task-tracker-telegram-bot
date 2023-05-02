@@ -2,6 +2,21 @@ version: '3.8'
 
 services:
 
+  dispatcher:
+    build: ./dispatcher
+    image: dispatcher
+    ports:
+      - "8084:8084"
+    depends_on:
+      - rabbitmq
+    environment:
+      - TELEGRAM_BOT_USERNAME
+      - TELEGRAM_BOT_TOKEN
+      - SPRING_RABBITMQ_HOST=rabbitmq
+      - SPRING_RABBITMQ_PORT=5672
+      - SPRING_RABBITMQ_USERNAME=${DISPATCHER_RABBITMQ_USERNAME}
+      - SPRING_RABBITMQ_PASSWORD=${DISPATCHER_RABBITMQ_PASSWORD}
+
   rabbitmq:
     image: rabbitmq:3.11.0-management
     volumes:
@@ -10,6 +25,9 @@ services:
       - "5672:5672"
       - "15672:15672"
     restart: unless-stopped
+    environment:
+      - RABBITMQ_DEFAULT_USER=${DISPATCHER_RABBITMQ_USERNAME}
+      - RABBITMQ_DEFAULT_PASS=${DISPATCHER_RABBITMQ_PASSWORD}
 
   common-db:
     image: postgres:14.5
