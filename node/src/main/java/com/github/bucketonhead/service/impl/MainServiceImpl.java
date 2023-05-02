@@ -1,7 +1,7 @@
 package com.github.bucketonhead.service.impl;
 
 import com.github.bucketonhead.dao.AppUserJpaRepository;
-import com.github.bucketonhead.dao.RawDataDAO;
+import com.github.bucketonhead.dao.RawDataJpaRepository;
 import com.github.bucketonhead.entity.AppUser;
 import com.github.bucketonhead.entity.RawData;
 import com.github.bucketonhead.entity.enums.BotState;
@@ -20,7 +20,7 @@ import org.telegram.telegrambots.meta.api.objects.User;
 @RequiredArgsConstructor
 public class MainServiceImpl implements MainService {
     private final ProducerService producerService;
-    private final RawDataDAO rawDataDAO;
+    private final RawDataJpaRepository rawDataJpaRepository;
     private final AppUserJpaRepository appUserJpaRepository;
 
     @Override
@@ -83,7 +83,7 @@ public class MainServiceImpl implements MainService {
         RawData rawData = RawData.builder()
                 .event(update)
                 .build();
-        rawDataDAO.save(rawData);
+        rawDataJpaRepository.save(rawData);
     }
 
     private AppUser findOrSaveAppUser(User tgUser) {
