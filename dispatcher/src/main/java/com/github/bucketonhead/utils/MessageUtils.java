@@ -5,9 +5,9 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
 @UtilityClass
-public final class MessageUtils {
+public class MessageUtils {
 
-    public static SendMessage buildTextMessage(Update update, String text) {
+    public SendMessage buildTextMessage(Update update, String text) {
         return SendMessage.builder()
                 .chatId(update.getMessage().getChatId())
                 .text(text)
