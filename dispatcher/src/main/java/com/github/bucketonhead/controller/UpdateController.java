@@ -12,8 +12,8 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 @Component
 @Slf4j
 public class UpdateController {
-    private final TelegramBot telegramBot;
     private final UpdateProducer updateProducer;
+    private final TelegramBot telegramBot;
 
     public UpdateController(@Lazy TelegramBot telegramBot,
                             UpdateProducer updateProducer) {
