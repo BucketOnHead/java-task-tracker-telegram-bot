@@ -10,11 +10,6 @@ public enum ServiceCommand {
         this.value = value;
     }
 
-    @Override
-    public String toString() {
-        return value;
-    }
-
     public static ServiceCommand fromValue(String s) {
         ServiceCommand serviceCommand = null;
         for (ServiceCommand cmd : ServiceCommand.values()) {
@@ -25,5 +20,10 @@ public enum ServiceCommand {
         }
 
         return serviceCommand;
+    }
+
+    @Override
+    public String toString() {
+        return value;
     }
 }
