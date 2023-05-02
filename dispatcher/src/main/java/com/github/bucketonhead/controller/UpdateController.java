@@ -21,6 +21,12 @@ public class UpdateController {
         this.updateProducer = updateProducer;
     }
 
+    public void setView(SendMessage sendMessage) {
+        telegramBot.sendBotMessageIgnoreException(sendMessage);
+        log.debug("Отправлено сообщение[text='{}'] от бота в чат[id={}]",
+                sendMessage.getText(), sendMessage.getChatId());
+    }
+
     public void processUpdate(Update update) {
         if (update == null) {
             log.error("Received update is null");
@@ -32,12 +38,6 @@ public class UpdateController {
         } else {
             log.error("Unsupported message type is received: " + update);
         }
-    }
-
-    public void setView(SendMessage sendMessage) {
-        telegramBot.sendBotMessageIgnoreException(sendMessage);
-        log.debug("Отправлено сообщение[text='{}'] от бота в чат[id={}]",
-                sendMessage.getText(), sendMessage.getChatId());
     }
 
     private void distributeMessageByType(Update update) {
