@@ -13,8 +13,8 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 @Slf4j
 @RequiredArgsConstructor
 public class TelegramBot extends TelegramLongPollingBot {
-    private final BotConfig botConfig;
     private final UpdateController updateController;
+    private final BotConfig botConfig;
 
     @Override
     public String getBotUsername() {
