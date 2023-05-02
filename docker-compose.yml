@@ -14,7 +14,7 @@ services:
   common-db:
     image: postgres:14.5
     volumes:
-      - rabbitmq_data:/var/lib/postgresql
+      - common-db_data:/var/lib/postgresql
     ports:
       - "5432:5432"
     restart: unless-stopped
