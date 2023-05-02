@@ -1,6 +1,5 @@
 package com.github.bucketonhead.controller;
 
-import com.github.bucketonhead.constants.RabbitQueue;
 import com.github.bucketonhead.service.UpdateProducer;
 import com.github.bucketonhead.utils.MessageUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -54,7 +53,7 @@ public class UpdateController {
     }
 
     private void processTextMessage(Update update) {
-        updateProducer.produce(RabbitQueue.TEXT_MESSAGE_UPDATE, update);
+        updateProducer.produceTextMessage(update);
     }
 
     private void setUnsupportedMessageTypeView(Update update) {
