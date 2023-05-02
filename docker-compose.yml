@@ -19,9 +19,9 @@ services:
       - "5432:5432"
     restart: unless-stopped
     environment:
-      - POSTGRES_DB=
-      - POSTGRES_USER=
-      - POSTGRES_PASSWORD=
+      - POSTGRES_DB=${COMMON_DB_NAME}
+      - POSTGRES_USER=${COMMON_DB_USER}
+      - POSTGRES_PASSWORD=${COMMON_DB_PASSWORD}
 
 volumes:
   rabbitmq_data:

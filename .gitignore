@@ -40,3 +40,4 @@ build/
 ### Project ###
 /.idea/
 /.logs/
+*.env
