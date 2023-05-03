@@ -3,61 +3,63 @@ version: '3.8'
 services:
 
   dispatcher:
-    build: ./dispatcher
     image: dispatcher
+    build: ./dispatcher
+    restart: unless-stopped
     ports:
       - "8084:8084"
     depends_on:
       - rabbitmq
       - node
     environment:
-      - TELEGRAM_BOT_USERNAME
-      - TELEGRAM_BOT_TOKEN
-      - SPRING_RABBITMQ_HOST=rabbitmq
-      - SPRING_RABBITMQ_PORT=5672
-      - SPRING_RABBITMQ_USERNAME=${RABBITMQ_DEFAULT_USER}
-      - SPRING_RABBITMQ_PASSWORD=${RABBITMQ_DEFAULT_PASS}
+      TELEGRAM_BOT_USERNAME:
+      TELEGRAM_BOT_TOKEN:
+      SPRING_RABBITMQ_HOST: rabbitmq
+      SPRING_RABBITMQ_PORT: 5672
+      SPRING_RABBITMQ_USERNAME: ${RABBITMQ_DEFAULT_USER}
+      SPRING_RABBITMQ_PASSWORD: ${RABBITMQ_DEFAULT_PASS}
 
   node:
-    build: ./node
     image: node
+    build: ./node
+    restart: unless-stopped
     ports:
       - "8085:8085"
     depends_on:
       - rabbitmq
       - common-db
     environment:
-      - SPRING_RABBITMQ_HOST=rabbitmq
-      - SPRING_RABBITMQ_PORT=5672
-      - SPRING_RABBITMQ_USERNAME=${RABBITMQ_DEFAULT_USER}
-      - SPRING_RABBITMQ_PASSWORD=${RABBITMQ_DEFAULT_PASS}
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://common-db:5432/${COMMON_DB_NAME}
-      - SPRING_DATASOURCE_USERNAME=${COMMON_DB_USER}
-      - SPRING_DATASOURCE_PASSWORD=${COMMON_DB_PASSWORD}
+      SPRING_RABBITMQ_HOST: rabbitmq
+      SPRING_RABBITMQ_PORT: 5672
+      SPRING_RABBITMQ_USERNAME: ${RABBITMQ_DEFAULT_USER}
+      SPRING_RABBITMQ_PASSWORD: ${RABBITMQ_DEFAULT_PASS}
+      SPRING_DATASOURCE_URL: jdbc:postgresql://common-db:5432/${COMMON_DB_NAME}
+      SPRING_DATASOURCE_USERNAME: ${COMMON_DB_USER}
+      SPRING_DATASOURCE_PASSWORD: ${COMMON_DB_PASSWORD}
 
   rabbitmq:
     image: rabbitmq:3.11.0-management
+    restart: unless-stopped
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
     ports:
       - "5672:5672"
       - "15672:15672"
-    restart: unless-stopped
     environment:
-      - RABBITMQ_DEFAULT_USER
-      - RABBITMQ_DEFAULT_PASS
+      RABBITMQ_DEFAULT_USER:
+      RABBITMQ_DEFAULT_PASS:
 
   common-db:
     image: postgres:14.5
+    restart: unless-stopped
     volumes:
       - common-db_data:/var/lib/postgresql
     ports:
       - "5432:5432"
-    restart: unless-stopped
     environment:
-      - POSTGRES_DB=${COMMON_DB_NAME}
-      - POSTGRES_USER=${COMMON_DB_USER}
-      - POSTGRES_PASSWORD=${COMMON_DB_PASSWORD}
+      POSTGRES_DB: ${COMMON_DB_NAME}
+      POSTGRES_USER: ${COMMON_DB_USER}
+      POSTGRES_PASSWORD: ${COMMON_DB_PASSWORD}
 
 volumes:
   rabbitmq_data:
