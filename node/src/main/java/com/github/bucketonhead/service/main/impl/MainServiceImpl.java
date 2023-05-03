@@ -1,13 +1,13 @@
-package com.github.bucketonhead.service.impl;
+package com.github.bucketonhead.service.main.impl;
 
-import com.github.bucketonhead.dao.AppUserDAO;
-import com.github.bucketonhead.dao.RawDataDAO;
+import com.github.bucketonhead.dao.AppUserJpaRepository;
+import com.github.bucketonhead.dao.RawDataJpaRepository;
 import com.github.bucketonhead.entity.AppUser;
 import com.github.bucketonhead.entity.RawData;
-import com.github.bucketonhead.entity.enums.AppUserState;
-import com.github.bucketonhead.service.MainService;
-import com.github.bucketonhead.service.ProducerService;
-import com.github.bucketonhead.service.enums.ServiceCommand;
+import com.github.bucketonhead.entity.enums.BotState;
+import com.github.bucketonhead.service.main.MainService;
+import com.github.bucketonhead.service.rabbitmq.ProducerService;
+import com.github.bucketonhead.service.main.enums.ServiceCommand;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -20,8 +20,8 @@ import org.telegram.telegrambots.meta.api.objects.User;
 @RequiredArgsConstructor
 public class MainServiceImpl implements MainService {
     private final ProducerService producerService;
-    private final RawDataDAO rawDataDAO;
-    private final AppUserDAO appUserDAO;
+    private final RawDataJpaRepository rawDataJpaRepository;
+    private final AppUserJpaRepository appUserJpaRepository;
 
     @Override
     public void processTextMessage(Update update) {
@@ -33,9 +33,9 @@ public class MainServiceImpl implements MainService {
         var serviceCommand = ServiceCommand.fromValue(text);
         if (ServiceCommand.CANCEL.equals(serviceCommand)) {
             output = cancelProcess(appUser);
-        } else if (AppUserState.BASIC_STATE.equals(appUser.getState())) {
+        } else if (BotState.BASIC_STATE.equals(appUser.getState())) {
             output = processBasicStateCommand(appUser, text);
-        } else if (AppUserState.WAIT_FOR_EMAIL_STATE.equals(appUser.getState())) {
+        } else if (BotState.WAIT_FOR_EMAIL_STATE.equals(appUser.getState())) {
             // TODO: реализовать после добавления email-сервиса
         } else {
             log.error("Unknown user state: " + appUser.getState());
@@ -66,8 +66,8 @@ public class MainServiceImpl implements MainService {
     }
 
     private String cancelProcess(AppUser appUser) {
-        appUser.setState(AppUserState.BASIC_STATE);
-        appUserDAO.save(appUser);
+        appUser.setState(BotState.BASIC_STATE);
+        appUserJpaRepository.save(appUser);
         return "Команда отменена!";
     }
 
@@ -83,11 +83,11 @@ public class MainServiceImpl implements MainService {
         RawData rawData = RawData.builder()
                 .event(update)
                 .build();
-        rawDataDAO.save(rawData);
+        rawDataJpaRepository.save(rawData);
     }
 
     private AppUser findOrSaveAppUser(User tgUser) {
-        AppUser persistenceAppUser = appUserDAO.findByTelegramUserId(tgUser.getId());
+        AppUser persistenceAppUser = appUserJpaRepository.findByTelegramUserId(tgUser.getId());
         if (persistenceAppUser == null) {
             AppUser transientAppUser = AppUser.builder()
                     .telegramUserId(tgUser.getId())
@@ -96,9 +96,9 @@ public class MainServiceImpl implements MainService {
                     .username(tgUser.getUserName())
                     // TODO: поменять на false после реализации email-сервиса
                     .isActive(Boolean.TRUE)
-                    .state(AppUserState.BASIC_STATE)
+                    .state(BotState.BASIC_STATE)
                     .build();
-            persistenceAppUser = appUserDAO.save(transientAppUser);
+            persistenceAppUser = appUserJpaRepository.save(transientAppUser);
         }
         return persistenceAppUser;
     }

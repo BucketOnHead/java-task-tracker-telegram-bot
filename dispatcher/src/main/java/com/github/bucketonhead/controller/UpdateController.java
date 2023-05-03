@@ -1,7 +1,6 @@
 package com.github.bucketonhead.controller;
 
-import com.github.bucketonhead.constants.RabbitQueue;
-import com.github.bucketonhead.service.UpdateProducer;
+import com.github.bucketonhead.service.rabbitmq.UpdateProducer;
 import com.github.bucketonhead.utils.MessageUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Lazy;
@@ -12,13 +11,19 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 @Component
 @Slf4j
 public class UpdateController {
-    private final TelegramBot telegramBot;
     private final UpdateProducer updateProducer;
+    private final TelegramBot telegramBot;
 
     public UpdateController(@Lazy TelegramBot telegramBot,
                             UpdateProducer updateProducer) {
         this.telegramBot = telegramBot;
         this.updateProducer = updateProducer;
+    }
+
+    public void setView(SendMessage sendMessage) {
+        telegramBot.sendBotMessageIgnoreException(sendMessage);
+        log.debug("Отправлено сообщение[text='{}'] от бота в чат[id={}]",
+                sendMessage.getText(), sendMessage.getChatId());
     }
 
     public void processUpdate(Update update) {
@@ -32,12 +37,6 @@ public class UpdateController {
         } else {
             log.error("Unsupported message type is received: " + update);
         }
-    }
-
-    public void setView(SendMessage sendMessage) {
-        telegramBot.sendBotMessageIgnoreException(sendMessage);
-        log.debug("Отправлено сообщение[text='{}'] от бота в чат[id={}]",
-                sendMessage.getText(), sendMessage.getChatId());
     }
 
     private void distributeMessageByType(Update update) {
@@ -54,7 +53,7 @@ public class UpdateController {
     }
 
     private void processTextMessage(Update update) {
-        updateProducer.produce(RabbitQueue.TEXT_MESSAGE_UPDATE, update);
+        updateProducer.produceTextMessage(update);
     }
 
     private void setUnsupportedMessageTypeView(Update update) {

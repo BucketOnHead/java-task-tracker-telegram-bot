@@ -1,4 +1,4 @@
-package com.github.bucketonhead.service.enums;
+package com.github.bucketonhead.service.main.enums;
 
 public enum ServiceCommand {
     CANCEL("/cancel"),
@@ -8,11 +8,6 @@ public enum ServiceCommand {
 
     ServiceCommand(String value) {
         this.value = value;
-    }
-
-    @Override
-    public String toString() {
-        return value;
     }
 
     public static ServiceCommand fromValue(String s) {
@@ -25,5 +20,10 @@ public enum ServiceCommand {
         }
 
         return serviceCommand;
+    }
+
+    @Override
+    public String toString() {
+        return value;
     }
 }

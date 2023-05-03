@@ -1,6 +1,6 @@
 package com.github.bucketonhead.entity;
 
-import com.github.bucketonhead.entity.enums.AppUserState;
+import com.github.bucketonhead.entity.enums.BotState;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 
@@ -32,5 +32,5 @@ public class AppUser {
     private Boolean isActive;
 
     @Enumerated(EnumType.STRING)
-    private AppUserState state;
+    private BotState state;
 }

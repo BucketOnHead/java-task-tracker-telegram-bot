@@ -1,20 +1,17 @@
 package com.github.bucketonhead.config;
 
 import lombok.Getter;
-import org.springframework.beans.factory.annotation.Value;
+import lombok.Setter;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 
 @Configuration
+@ConfigurationProperties(prefix = "bot")
 @PropertySource("classpath:bot.properties")
 @Getter
+@Setter
 public class BotConfig {
-    private final String name;
-    private final String token;
-
-    public BotConfig(@Value("${bot.name}") String name,
-                     @Value("${bot.token}") String token) {
-        this.name = name;
-        this.token = token;
-    }
+    private String name;
+    private String token;
 }
