@@ -6,13 +6,14 @@ import com.github.bucketonhead.entity.AppUser;
 import com.github.bucketonhead.entity.RawData;
 import com.github.bucketonhead.entity.enums.BotState;
 import com.github.bucketonhead.service.main.MainService;
-import com.github.bucketonhead.service.rabbitmq.ProducerService;
 import com.github.bucketonhead.service.main.enums.ServiceCommand;
+import com.github.bucketonhead.service.rabbitmq.ProducerService;
 import com.github.bucketonhead.utils.TextMessageUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.User;
 
@@ -27,63 +28,74 @@ public class MainServiceImpl implements MainService {
     @Override
     public void processTextMessage(Update update) {
         saveRawData(update);
-        var appUser = findOrSaveAppUser(update.getMessage().getFrom());
-        var text = update.getMessage().getText();
-        var output = "";
+        var msg = update.getMessage();
+        var appUser = findOrSaveAppUser(msg.getFrom());
 
-        var serviceCommand = ServiceCommand.fromValue(text);
+        var serviceCommand = ServiceCommand.fromValue(msg.getText());
         if (ServiceCommand.CANCEL.equals(serviceCommand)) {
-            output = cancelProcess(appUser);
-        } else if (BotState.BASIC_STATE.equals(appUser.getState())) {
-            output = processBasicStateCommand(appUser, text);
-        } else if (BotState.WAIT_FOR_EMAIL_STATE.equals(appUser.getState())) {
+            processCancelCommand(appUser, msg);
+            return;
+        }
+
+        if (BotState.BASIC_STATE == appUser.getState()) {
+            processBasicStateCommand(appUser, msg);
+        } else if (BotState.WAIT_FOR_EMAIL_STATE == appUser.getState()) {
             // TODO: реализовать после добавления email-сервиса
         } else {
-            log.error("Unknown user state: " + appUser.getState());
-            String botMessage = "Разработчик допустил ошибку при реализации " +
-                    "этой функциональности, попробуйте позже! Мы вернём вас в главное меню";
-            cancelProcess(appUser);
-            output = TextMessageUtils.buildErrorMessage(botMessage);
+            log.error("state: {}, не реализован", appUser.getState());
+            var text = "Разработчик допустил ошибку при реализации " +
+                    "этой функциональности, попробуйте позже! " +
+                    "А пока вернём вас в главное меню ☺";
+            var responseMessage = TextMessageUtils.buildErrorMessage(text);
+            sendResponseMessage(responseMessage, msg.getChatId());
+            processCancelCommand(appUser, msg);
         }
-
-        var chatId = update.getMessage().getChatId();
-        sendAnswer(output, chatId);
     }
 
-    private String processBasicStateCommand(AppUser appUser, String text) {
-        if (!text.startsWith(ServiceCommand.PREFIX)) {
-            return "Я бы с удовольствие поговорил, " +
+    private void processBasicStateCommand(AppUser appUser, Message msg) {
+        String responseMessage;
+        if (!msg.getText().startsWith(ServiceCommand.PREFIX)) {
+            responseMessage = "Я бы с удовольствие поговорил, " +
                     "но я просто бот, выполняющий команды ☺";
+            sendResponseMessage(responseMessage, msg.getChatId());
+            return;
         }
 
-        var serviceCommand = ServiceCommand.fromValue(text);
+        var serviceCommand = ServiceCommand.fromValue(msg.getText());
         if (serviceCommand == null) {
-            String botMessage = "Команда не распознана!";
-            return TextMessageUtils.buildErrorMessage(botMessage);
-        }
-
-        if (ServiceCommand.HELP.equals(serviceCommand)) {
-            return "Список доступных команд:\n"
-                    + "\n"
-                    + ServiceCommand.CANCEL + " - отмена выполнения текущей команды";
-        } else if (ServiceCommand.START.equals(serviceCommand)) {
-            return "Приветствую! Чтобы посмотреть список " +
-                    "доступных команд используйте " + ServiceCommand.HELP;
+            var text = "Команда не распознана!";
+            responseMessage = TextMessageUtils.buildErrorMessage(text);
+        } else if (ServiceCommand.HELP == serviceCommand) {
+            var text = "Список доступных команд:%n%n" +
+                    "%s - отмена выполнения текущей команды";
+            responseMessage = String.format(text, ServiceCommand.CANCEL);
+        } else if (ServiceCommand.START == serviceCommand) {
+            var text = "Приветствую! Чтобы посмотреть список " +
+                    "доступных команд используйте %s";
+            responseMessage = String.format(text, ServiceCommand.HELP);
         } else {
-            String botMessage = "Если вы видите это сообщение, " +
+            var text = "Если вы видите это сообщение, " +
                     "значит разработчик забыл подключить " +
-                    "эту функциональность, попробуйте позже";
-            return TextMessageUtils.buildErrorMessage(botMessage);
+                    "эту функциональность, попробуйте позже!";
+            responseMessage = TextMessageUtils.buildErrorMessage(text);
         }
+
+        sendResponseMessage(responseMessage, msg.getChatId());
     }
 
-    private String cancelProcess(AppUser appUser) {
-        appUser.setState(BotState.BASIC_STATE);
-        appUserJpaRepository.save(appUser);
-        return "Команда отменена!";
+    private void processCancelCommand(AppUser appUser, Message msg) {
+        String responseMessage;
+        if (BotState.BASIC_STATE == appUser.getState()) {
+            responseMessage = "Вы уже в главном меню 😉";
+        } else {
+            appUser.setState(BotState.BASIC_STATE);
+            appUserJpaRepository.save(appUser);
+            responseMessage = "Вернули вас в главное меню!";
+        }
+        sendResponseMessage(responseMessage, msg.getChatId());
     }
 
-    private void sendAnswer(String text, Long chatId) {
+    private void sendResponseMessage(String text, Long chatId) {
         SendMessage sendMessage = SendMessage.builder()
                 .chatId(chatId)
                 .text(text)
