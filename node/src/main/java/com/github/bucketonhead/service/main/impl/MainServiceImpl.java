@@ -8,6 +8,7 @@ import com.github.bucketonhead.entity.enums.BotState;
 import com.github.bucketonhead.service.main.MainService;
 import com.github.bucketonhead.service.rabbitmq.ProducerService;
 import com.github.bucketonhead.service.main.enums.ServiceCommand;
+import com.github.bucketonhead.utils.TextMessageUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -39,7 +40,10 @@ public class MainServiceImpl implements MainService {
             // TODO: реализовать после добавления email-сервиса
         } else {
             log.error("Unknown user state: " + appUser.getState());
-            output = "Неизвестная ошибка! Введите /cancel и попробуйте снова!";
+            String botMessage = "Разработчик допустил ошибку при реализации " +
+                    "этой функциональности, попробуйте позже! Мы вернём вас в главное меню";
+            cancelProcess(appUser);
+            output = TextMessageUtils.buildErrorMessage(botMessage);
         }
 
         var chatId = update.getMessage().getChatId();
@@ -47,21 +51,29 @@ public class MainServiceImpl implements MainService {
     }
 
     private String processBasicStateCommand(AppUser appUser, String text) {
+        if (!text.startsWith(ServiceCommand.PREFIX)) {
+            return "Я бы с удовольствие поговорил, " +
+                    "но я просто бот, выполняющий команды ☺";
+        }
+
         var serviceCommand = ServiceCommand.fromValue(text);
         if (serviceCommand == null) {
-            return "⚠  Ошибка\n\nКоманда не распознана! " +
-                    "Чтобы посмотреть список доступных команд используйте /help";
+            String botMessage = "Команда не распознана!";
+            return TextMessageUtils.buildErrorMessage(botMessage);
         }
 
         if (ServiceCommand.HELP.equals(serviceCommand)) {
-            return "Список доступных команд:\n\n"
-                    + "/cancel - отмена выполнения текущей команды";
+            return "Список доступных команд:\n"
+                    + "\n"
+                    + ServiceCommand.CANCEL + " - отмена выполнения текущей команды";
         } else if (ServiceCommand.START.equals(serviceCommand)) {
-            return "Приветствую! Чтобы посмотреть список доступных используйте /help";
+            return "Приветствую! Чтобы посмотреть список " +
+                    "доступных команд используйте " + ServiceCommand.HELP;
         } else {
-            return "Ой, если вы видите это сообщение - " +
-                    "значит разработчик забыл подключить эту функциональность, " +
-                    "попробуйте позже";
+            String botMessage = "Если вы видите это сообщение, " +
+                    "значит разработчик забыл подключить " +
+                    "эту функциональность, попробуйте позже";
+            return TextMessageUtils.buildErrorMessage(botMessage);
         }
     }
 
