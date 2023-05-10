@@ -1,6 +1,8 @@
 package com.github.bucketonhead.entity.enums;
 
 public enum BotState {
-    BASIC_STATE,
-    WAIT_FOR_EMAIL_STATE
+    BASIC,
+    CREATE_TASK,
+    DONE_TASK,
+    WAIT_FOR_EMAIL
 }

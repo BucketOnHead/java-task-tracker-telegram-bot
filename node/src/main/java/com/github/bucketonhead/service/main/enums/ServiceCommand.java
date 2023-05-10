@@ -3,6 +3,9 @@ package com.github.bucketonhead.service.main.enums;
 public enum ServiceCommand {
     CANCEL("cancel"),
     HELP("help"),
+    NEW_TASK("task"),
+    MY_TASKS("mytasks"),
+    DONE_TASK("donetask"),
     START("start");
     public static final String PREFIX = "/";
     private final String command;
