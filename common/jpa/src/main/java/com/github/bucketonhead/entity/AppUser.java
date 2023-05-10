@@ -6,6 +6,7 @@ import org.hibernate.annotations.CreationTimestamp;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.util.*;
 
 @Entity
 @Table(name = "app_user")
@@ -33,4 +34,8 @@ public class AppUser {
 
     @Enumerated(EnumType.STRING)
     private BotState state;
+
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @JoinColumn(name = "creator_id")
+    private List<AppTask> tasks;
 }
