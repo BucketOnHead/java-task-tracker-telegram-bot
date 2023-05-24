@@ -79,8 +79,8 @@ public class MainServiceImpl implements MainService {
             return;
         }
 
-        var completedTask = tasks.get(taskNumber - 1);
-        appTaskJpaRepository.deleteById(completedTask.getId());
+        appUser.getTasks().remove(taskNumber - 1);
+        appUserJpaRepository.save(appUser);
         var responseMessage = String.format("Готово! Вычеркнули задачу %d " +
                 "из списка задач, отметить ещё одну?%n" +
                 "%n%s - выйти", taskNumber, ServiceCommand.CANCEL);
