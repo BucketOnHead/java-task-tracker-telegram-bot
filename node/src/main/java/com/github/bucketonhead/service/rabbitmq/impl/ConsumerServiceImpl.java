@@ -20,6 +20,10 @@ public class ConsumerServiceImpl implements ConsumerService {
     public void consumeTextMessageUpdate(Update update) {
         log.debug("Получен update от пользователя[id={}] из очереди {}",
                 update.getMessage().getFrom().getId(), RabbitQueue.TEXT_MESSAGE_UPDATE);
-        mainService.processTextMessage(update);
+        try {
+            mainService.processTextMessage(update);
+        } catch (RuntimeException ex) {
+            log.error("main service error: {}", ex.getMessage());
+        }
     }
 }
