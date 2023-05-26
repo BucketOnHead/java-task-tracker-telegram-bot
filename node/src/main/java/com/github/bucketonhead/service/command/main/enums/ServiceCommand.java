@@ -1,4 +1,4 @@
-package com.github.bucketonhead.service.main.enums;
+package com.github.bucketonhead.service.command.main.enums;
 
 public enum ServiceCommand {
     CANCEL("cancel"),

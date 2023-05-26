@@ -1,4 +1,4 @@
-package com.github.bucketonhead.service.main;
+package com.github.bucketonhead.service.command.main;
 
 import org.telegram.telegrambots.meta.api.objects.Update;
 
