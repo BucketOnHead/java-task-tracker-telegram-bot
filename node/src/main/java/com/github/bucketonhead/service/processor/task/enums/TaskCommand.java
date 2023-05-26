@@ -1,6 +1,6 @@
-package com.github.bucketonhead.service.command.task.enums;
+package com.github.bucketonhead.service.processor.task.enums;
 
-import com.github.bucketonhead.service.command.basic.enums.BasicCommand;
+import com.github.bucketonhead.service.processor.basic.enums.BasicCommand;
 
 public enum TaskCommand {
     HELP("help"),

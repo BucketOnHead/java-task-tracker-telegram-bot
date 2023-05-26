@@ -1,4 +1,4 @@
-package com.github.bucketonhead.service.command.basic.enums;
+package com.github.bucketonhead.service.processor.basic.enums;
 
 public enum BasicCommand {
     START("start"),

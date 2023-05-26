@@ -1,13 +1,13 @@
-package com.github.bucketonhead.service.command.task.impl;
+package com.github.bucketonhead.service.processor.task.impl;
 
 import com.github.bucketonhead.dao.AppTaskJpaRepository;
 import com.github.bucketonhead.dao.AppUserJpaRepository;
 import com.github.bucketonhead.entity.AppTask;
 import com.github.bucketonhead.entity.AppUser;
 import com.github.bucketonhead.entity.enums.BotState;
-import com.github.bucketonhead.service.command.task.TaskService;
-import com.github.bucketonhead.service.command.task.enums.TaskCommand;
-import com.github.bucketonhead.service.command.main.enums.ServiceCommand;
+import com.github.bucketonhead.service.processor.task.TaskService;
+import com.github.bucketonhead.service.processor.task.enums.TaskCommand;
+import com.github.bucketonhead.service.processor.main.enums.ServiceCommand;
 import com.github.bucketonhead.service.rabbitmq.ProducerService;
 import com.github.bucketonhead.utils.ResponseMessageUtils;
 import lombok.RequiredArgsConstructor;
