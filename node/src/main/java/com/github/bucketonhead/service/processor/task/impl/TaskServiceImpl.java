@@ -5,15 +5,13 @@ import com.github.bucketonhead.dao.AppUserJpaRepository;
 import com.github.bucketonhead.entity.AppTask;
 import com.github.bucketonhead.entity.AppUser;
 import com.github.bucketonhead.entity.enums.BotState;
+import com.github.bucketonhead.service.processor.main.enums.ServiceCommand;
 import com.github.bucketonhead.service.processor.task.TaskService;
 import com.github.bucketonhead.service.processor.task.enums.TaskCommand;
-import com.github.bucketonhead.service.processor.main.enums.ServiceCommand;
-import com.github.bucketonhead.service.rabbitmq.ProducerService;
 import com.github.bucketonhead.utils.ResponseMessageUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
 
 import java.util.LinkedHashMap;
@@ -24,25 +22,20 @@ import java.util.stream.Collectors;
 @Slf4j
 @RequiredArgsConstructor
 public class TaskServiceImpl implements TaskService {
-    private final ProducerService producerService;
     private final AppUserJpaRepository appUserJpaRepository;
     private final AppTaskJpaRepository appTaskJpaRepository;
 
     @Override
-    public void processCommand(AppUser user, Message msg) {
+    public String processCommand(AppUser user, Message msg) {
         if (!TaskCommand.isCommandPattern(msg.getText())) {
-            var responseMessage = "Я бы с удовольствие поговорил, " +
+            return "Я бы с удовольствие поговорил, " +
                     "но я просто бот ☺";
-            sendMessage(responseMessage, msg.getChatId());
-            return;
         }
 
         var command = TaskCommand.fromValue(msg.getText());
         if (command == null) {
             var text = "Команда не распознана!";
-            var responseMessage = ResponseMessageUtils.buildErrorMessage(text);
-            sendMessage(responseMessage, msg.getChatId());
-            return;
+            return ResponseMessageUtils.buildErrorMessage(text);
         }
 
         String responseMessage;
@@ -60,7 +53,8 @@ public class TaskServiceImpl implements TaskService {
                     "эту функциональность, попробуйте позже!";
             responseMessage = ResponseMessageUtils.buildErrorMessage(text);
         }
-        sendMessage(responseMessage, msg.getChatId());
+
+        return responseMessage;
     }
 
     @Override
@@ -170,13 +164,5 @@ public class TaskServiceImpl implements TaskService {
         }
 
         return responseMessage;
-    }
-
-    private void sendMessage(String text, Long chatId) {
-        SendMessage sendMessage = SendMessage.builder()
-                .chatId(chatId)
-                .text(text)
-                .build();
-        producerService.producerAnswer(sendMessage);
     }
 }

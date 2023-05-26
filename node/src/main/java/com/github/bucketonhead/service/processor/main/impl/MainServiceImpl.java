@@ -9,12 +9,11 @@ import com.github.bucketonhead.service.processor.basic.BasicService;
 import com.github.bucketonhead.service.processor.main.MainService;
 import com.github.bucketonhead.service.processor.main.enums.ServiceCommand;
 import com.github.bucketonhead.service.processor.task.TaskService;
-import com.github.bucketonhead.service.rabbitmq.ProducerService;
+import com.github.bucketonhead.service.sender.MessageSender;
 import com.github.bucketonhead.utils.ResponseMessageUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.User;
 
@@ -22,7 +21,7 @@ import org.telegram.telegrambots.meta.api.objects.User;
 @Slf4j
 @RequiredArgsConstructor
 public class MainServiceImpl implements MainService {
-    private final ProducerService producerService;
+    private final MessageSender msgSender;
     private final RawDataJpaRepository rawDataJpaRepository;
     private final AppUserJpaRepository appUserJpaRepository;
     private final BasicService basicService;
@@ -33,49 +32,50 @@ public class MainServiceImpl implements MainService {
         saveRawData(update);
         var msg = update.getMessage();
         var appUser = findOrSaveAppUser(msg.getFrom());
+        String responseMessage;
 
         var serviceCommand = ServiceCommand.fromValue(msg.getText());
         if (ServiceCommand.CANCEL.equals(serviceCommand)) {
-            var responseMessage = basicService.processCancelCommand(appUser);
-            sendResponseMessage(responseMessage, msg.getChatId());
+            responseMessage = basicService.processCancelCommand(appUser);
+            msgSender.sendText(responseMessage, msg.getChatId());
 
             responseMessage = basicService.processHelpCommand();
-            sendResponseMessage(responseMessage, msg.getChatId());
+            msgSender.sendText(responseMessage, msg.getChatId());
             return;
         }
 
         if (BotState.BASIC == appUser.getState()) {
-            basicService.processCommand(appUser, msg);
+            responseMessage = basicService.processCommand(appUser, msg);
+            msgSender.sendText(responseMessage, msg.getChatId());
+
+            responseMessage = basicService.processHelpCommand();
+            msgSender.sendText(responseMessage, msg.getChatId());
+            return;
         } else if (BotState.TASK_MODE == appUser.getState()) {
-            taskService.processCommand(appUser, msg);
+            responseMessage = taskService.processCommand(appUser, msg);
         } else if (BotState.WAIT_TASK == appUser.getState()) {
-            var responseMessage = taskService.processNewTaskCommand(appUser, msg);
-            sendResponseMessage(responseMessage, msg.getChatId());
+            responseMessage = taskService.processNewTaskCommand(appUser, msg);
         } else if (BotState.DONE_TASK == appUser.getState()) {
-            var responseMessage = taskService.processDoneTaskCommand(appUser, msg);
-            sendResponseMessage(responseMessage, msg.getChatId());
+            responseMessage = taskService.processDoneTaskCommand(appUser, msg);
+            msgSender.sendText(responseMessage, msg.getChatId());
 
             responseMessage = taskService.processMyTasksCommand(appUser);
-            sendResponseMessage(responseMessage, msg.getChatId());
+            msgSender.sendText(responseMessage, msg.getChatId());
+            return;
         } else {
             log.error("state: {}, не реализован", appUser.getState());
             var text = "Разработчик допустил ошибку при реализации " +
                     "этой функциональности, попробуйте позже! " +
                     "А пока вернём вас в главное меню ☺";
-            var responseMessage = ResponseMessageUtils.buildErrorMessage(text);
-            sendResponseMessage(responseMessage, msg.getChatId());
+            responseMessage = ResponseMessageUtils.buildErrorMessage(text);
+            msgSender.sendText(responseMessage, msg.getChatId());
 
             responseMessage = basicService.processCancelCommand(appUser);
-            sendResponseMessage(responseMessage, msg.getChatId());
+            msgSender.sendText(responseMessage, msg.getChatId());
+            return;
         }
-    }
 
-    private void sendResponseMessage(String text, Long chatId) {
-        SendMessage sendMessage = SendMessage.builder()
-                .chatId(chatId)
-                .text(text)
-                .build();
-        producerService.producerAnswer(sendMessage);
+        msgSender.sendText(responseMessage, msg.getChatId());
     }
 
     private void saveRawData(Update update) {

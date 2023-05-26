@@ -5,13 +5,10 @@ import com.github.bucketonhead.entity.AppUser;
 import com.github.bucketonhead.entity.enums.BotState;
 import com.github.bucketonhead.service.processor.basic.BasicService;
 import com.github.bucketonhead.service.processor.basic.enums.BasicCommand;
-import com.github.bucketonhead.service.processor.task.TaskService;
-import com.github.bucketonhead.service.rabbitmq.ProducerService;
 import com.github.bucketonhead.utils.ResponseMessageUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
 
 import java.time.Duration;
@@ -24,25 +21,19 @@ import java.util.stream.Collectors;
 @Slf4j
 @RequiredArgsConstructor
 public class BasicServiceImpl implements BasicService {
-    private final ProducerService producerService;
     private final AppUserJpaRepository appUserJpaRepository;
-    private final TaskService taskService;
 
     @Override
-    public void processCommand(AppUser user, Message msg) {
+    public String processCommand(AppUser user, Message msg) {
         if (!BasicCommand.isCommandPattern(msg.getText())) {
-            var responseMessage = "Я бы с удовольствие поговорил, " +
+            return "Я бы с удовольствие поговорил, " +
                     "но я просто бот ☺";
-            sendMessage(responseMessage, msg.getChatId());
-            return;
         }
 
         var command = BasicCommand.fromValue(msg.getText());
         if (command == null) {
             var text = "Команда не распознана!";
-            var responseMessage = ResponseMessageUtils.buildErrorMessage(text);
-            sendMessage(responseMessage, msg.getChatId());
-            return;
+            return  ResponseMessageUtils.buildErrorMessage(text);
         }
 
         String responseMessage;
@@ -54,11 +45,6 @@ public class BasicServiceImpl implements BasicService {
             responseMessage = processCancelCommand(user);
         } else if (BasicCommand.TASK_MODE == command) {
             responseMessage = processTaskModeCommand(user);
-            sendMessage(responseMessage, msg.getChatId());
-
-            responseMessage = taskService.processHelpCommand();
-            sendMessage(responseMessage, msg.getChatId());
-            return;
         } else {
             var text = "Если вы видите это сообщение, " +
                     "значит разработчик забыл подключить " +
@@ -66,7 +52,7 @@ public class BasicServiceImpl implements BasicService {
             responseMessage = ResponseMessageUtils.buildErrorMessage(text);
         }
 
-        sendMessage(responseMessage, msg.getChatId());
+        return responseMessage;
     }
 
     private String processTaskModeCommand(AppUser user) {
@@ -107,7 +93,9 @@ public class BasicServiceImpl implements BasicService {
         String responseMessage;
         var regDuration = Duration.between(user.getFirstLoginDate(), LocalDateTime.now());
         if (regDuration.toSeconds() < 3) {
-            responseMessage = "Добро пожаловать 🥰\n\n" +
+            responseMessage = "" +
+                    "Добро пожаловать 🥰\n" +
+                    "\n" +
                     "Используйте " + BasicCommand.HELP +
                     " чтобы узнать, что я умею 😊";
         } else {
@@ -118,13 +106,5 @@ public class BasicServiceImpl implements BasicService {
         }
 
         return responseMessage;
-    }
-
-    private void sendMessage(String text, Long chatId) {
-        SendMessage sendMessage = SendMessage.builder()
-                .chatId(chatId)
-                .text(text)
-                .build();
-        producerService.producerAnswer(sendMessage);
     }
 }
