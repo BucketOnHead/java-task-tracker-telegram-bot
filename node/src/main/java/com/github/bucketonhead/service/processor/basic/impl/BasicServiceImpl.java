@@ -5,7 +5,7 @@ import com.github.bucketonhead.entity.AppUser;
 import com.github.bucketonhead.entity.enums.BotState;
 import com.github.bucketonhead.service.processor.basic.BasicService;
 import com.github.bucketonhead.service.processor.basic.enums.BasicCommand;
-import com.github.bucketonhead.utils.ResponseMessageUtils;
+import com.github.bucketonhead.service.sender.MessageSender;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -21,48 +21,50 @@ import java.util.stream.Collectors;
 @Slf4j
 @RequiredArgsConstructor
 public class BasicServiceImpl implements BasicService {
+    private final MessageSender msgSender;
     private final AppUserJpaRepository appUserJpaRepository;
 
     @Override
-    public String processCommand(AppUser user, Message msg) {
+    public void processCommand(AppUser user, Message msg) {
         if (!BasicCommand.isCommandPattern(msg.getText())) {
-            return "Я бы с удовольствие поговорил, " +
+            var responseMessage = "Я бы с удовольствие поговорил, " +
                     "но я просто бот ☺";
+            msgSender.send(responseMessage, msg.getChatId());
         }
 
         var command = BasicCommand.fromValue(msg.getText());
         if (command == null) {
-            var text = "Команда не распознана!";
-            return  ResponseMessageUtils.buildErrorMessage(text);
+            var responseMessage = "Команда не распознана!";
+            msgSender.sendError(responseMessage, msg.getChatId());
         }
 
-        String responseMessage;
         if (BasicCommand.START == command) {
-            responseMessage = processStartCommand(user);
+            processStartCommand(user, msg);
         } else if (BasicCommand.HELP == command) {
-            responseMessage = processHelpCommand();
-        } else if (BasicCommand.CANCEL == command) {
-            responseMessage = processCancelCommand(user);
+            processHelpCommand(msg);
+        } else if (BasicCommand.MAIN_MODE == command) {
+            processMainModeCommand(user, msg);
         } else if (BasicCommand.TASK_MODE == command) {
-            responseMessage = processTaskModeCommand(user);
+            processTaskModeCommand(user, msg);
         } else {
             var text = "Если вы видите это сообщение, " +
                     "значит разработчик забыл подключить " +
                     "эту функциональность, попробуйте позже!";
-            responseMessage = ResponseMessageUtils.buildErrorMessage(text);
+            msgSender.sendError(text, msg.getChatId());
         }
-
-        return responseMessage;
-    }
-
-    private String processTaskModeCommand(AppUser user) {
-        user.setState(BotState.TASK_MODE);
-        appUserJpaRepository.save(user);
-        return "Текущий режим: управление задачами";
     }
 
     @Override
-    public String processCancelCommand(AppUser user) {
+    public void processTaskModeCommand(AppUser user, Message msg) {
+        user.setState(BotState.TASK_MODE);
+        appUserJpaRepository.save(user);
+
+        var responseMessage = "Текущий режим: управление задачами";
+        msgSender.send(responseMessage, msg.getChatId());
+    }
+
+    @Override
+    public void processMainModeCommand(AppUser user, Message msg) {
         String responseMessage;
         if (BotState.BASIC == user.getState()) {
             responseMessage = "Вы уже в главном меню 😉";
@@ -72,24 +74,25 @@ public class BasicServiceImpl implements BasicService {
             responseMessage = "Вернули вас в главное меню!";
         }
 
-        return responseMessage;
+        msgSender.send(responseMessage, msg.getChatId());
     }
 
     @Override
-    public String processHelpCommand() {
+    public void processHelpCommand(Message msg) {
         Map<BasicCommand, String> commandDescription = new LinkedHashMap<>();
         commandDescription.put(BasicCommand.HELP, "получить список доступных команд");
         commandDescription.put(BasicCommand.TASK_MODE, "перейти в режим управления задачами");
-        commandDescription.put(BasicCommand.CANCEL, "отмена выполнения текущей команды");
+        commandDescription.put(BasicCommand.MAIN_MODE, "вернуться в главный режим");
 
-        return "Список доступных команд:" + commandDescription.entrySet()
+        var responseMessage = "Список доступных команд:" + commandDescription.entrySet()
                 .stream()
                 .map(entry -> String.format("%n%n%s - %s.", entry.getKey(), entry.getValue()))
                 .collect(Collectors.joining());
+        msgSender.send(responseMessage, msg.getChatId());
     }
 
     @Override
-    public String processStartCommand(AppUser user) {
+    public void processStartCommand(AppUser user, Message msg) {
         String responseMessage;
         var regDuration = Duration.between(user.getFirstLoginDate(), LocalDateTime.now());
         if (regDuration.toSeconds() < 3) {
@@ -105,6 +108,6 @@ public class BasicServiceImpl implements BasicService {
             appUserJpaRepository.deleteById(user.getId());
         }
 
-        return responseMessage;
+        msgSender.send(responseMessage, msg.getChatId());
     }
 }

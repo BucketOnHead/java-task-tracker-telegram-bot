@@ -5,11 +5,11 @@ import com.github.bucketonhead.service.processor.CommandProcessor;
 import org.telegram.telegrambots.meta.api.objects.Message;
 
 public interface TaskService extends CommandProcessor {
-    String processHelpCommand();
+    void processHelpCommand(Message msg);
 
-    String processNewTaskCommand(AppUser user, Message msg);
+    void processNewTaskCommand(AppUser user, Message msg);
 
-    String processMyTasksCommand(AppUser user);
+    void processMyTasksCommand(AppUser user, Message msg);
 
-    String processDoneTaskCommand(AppUser user, Message msg);
+    void processDoneTaskCommand(AppUser user, Message msg);
 }
