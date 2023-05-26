@@ -31,8 +31,8 @@ public class MainServiceImpl implements MainService {
         var appUser = findOrSaveAppUser(msg.getFrom());
 
         var cmd = BasicCommand.fromValue(msg.getText());
-        if (BasicCommand.MAIN_MODE == cmd) {
-            basicService.processMainModeCommand(appUser, msg);
+        if (BasicCommand.MAIN == cmd) {
+            basicService.processMainCommand(appUser, msg);
             basicService.processHelpCommand(msg);
             return;
         } else if (BasicCommand.TASK_MODE == cmd) {
@@ -49,13 +49,12 @@ public class MainServiceImpl implements MainService {
              taskService.processNewTaskCommand(appUser, msg);
         } else if (BotState.DONE_TASK == appUser.getState()) {
             taskService.processDoneTaskCommand(appUser, msg);
-            taskService.processMyTasksCommand(appUser, msg);
         } else {
             var responseMessage = "Разработчик допустил ошибку при реализации " +
                     "этой функциональности, попробуйте позже! " +
                     "А пока вернём вас в главное меню ☺";
             msgSender.sendError(responseMessage, msg.getChatId());
-            basicService.processMainModeCommand(appUser, msg);
+            basicService.processMainCommand(appUser, msg);
         }
     }
 

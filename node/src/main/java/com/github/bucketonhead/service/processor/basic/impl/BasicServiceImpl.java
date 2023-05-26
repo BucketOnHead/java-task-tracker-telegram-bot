@@ -42,8 +42,8 @@ public class BasicServiceImpl implements BasicService {
             processStartCommand(user, msg);
         } else if (BasicCommand.HELP == command) {
             processHelpCommand(msg);
-        } else if (BasicCommand.MAIN_MODE == command) {
-            processMainModeCommand(user, msg);
+        } else if (BasicCommand.MAIN == command) {
+            processMainCommand(user, msg);
         } else if (BasicCommand.TASK_MODE == command) {
             processTaskModeCommand(user, msg);
         } else {
@@ -59,12 +59,12 @@ public class BasicServiceImpl implements BasicService {
         user.setState(BotState.TASK_MODE);
         appUserJpaRepository.save(user);
 
-        var responseMessage = "Текущий режим: управление задачами";
+        var responseMessage = "Перевёл вас в режим управления задачами";
         msgSender.send(responseMessage, msg.getChatId());
     }
 
     @Override
-    public void processMainModeCommand(AppUser user, Message msg) {
+    public void processMainCommand(AppUser user, Message msg) {
         String responseMessage;
         if (BotState.BASIC == user.getState()) {
             responseMessage = "Вы уже в главном меню 😉";
@@ -80,9 +80,8 @@ public class BasicServiceImpl implements BasicService {
     @Override
     public void processHelpCommand(Message msg) {
         Map<BasicCommand, String> commandDescription = new LinkedHashMap<>();
-        commandDescription.put(BasicCommand.HELP, "получить список доступных команд");
         commandDescription.put(BasicCommand.TASK_MODE, "перейти в режим управления задачами");
-        commandDescription.put(BasicCommand.MAIN_MODE, "вернуться в главный режим");
+        commandDescription.put(BasicCommand.HELP, "получить список доступных команд");
 
         var responseMessage = "Список доступных команд:" + commandDescription.entrySet()
                 .stream()

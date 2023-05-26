@@ -7,7 +7,7 @@ import org.telegram.telegrambots.meta.api.objects.Message;
 public interface BasicService extends CommandProcessor {
     void processTaskModeCommand(AppUser user, Message msg);
 
-    void processMainModeCommand(AppUser user, Message msg);
+    void processMainCommand(AppUser user, Message msg);
 
     void processHelpCommand(Message msg);
 

@@ -3,7 +3,7 @@ package com.github.bucketonhead.service.processor.basic.enums;
 public enum BasicCommand {
     START("start"),
     HELP("help"),
-    MAIN_MODE("main"),
+    MAIN("main"),
     TASK_MODE("taskmode");
     public static final String PREFIX = "/";
     private final String command;

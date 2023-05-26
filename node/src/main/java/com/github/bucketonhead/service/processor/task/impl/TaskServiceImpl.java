@@ -5,7 +5,7 @@ import com.github.bucketonhead.dao.AppUserJpaRepository;
 import com.github.bucketonhead.entity.AppTask;
 import com.github.bucketonhead.entity.AppUser;
 import com.github.bucketonhead.entity.enums.BotState;
-import com.github.bucketonhead.service.processor.main.enums.ServiceCommand;
+import com.github.bucketonhead.service.processor.basic.enums.BasicCommand;
 import com.github.bucketonhead.service.processor.task.TaskService;
 import com.github.bucketonhead.service.processor.task.enums.TaskCommand;
 import com.github.bucketonhead.service.sender.MessageSender;
@@ -35,21 +35,24 @@ public class TaskServiceImpl implements TaskService {
             return;
         }
 
-        var command = TaskCommand.fromValue(msg.getText());
-        if (command == null) {
+        var cmd = TaskCommand.fromValue(msg.getText());
+        if (cmd == null) {
             var responseMessage = "Команда не распознана!";
             msgSender.sendError(responseMessage, msg.getChatId());
             return;
         }
 
-        if (TaskCommand.HELP == command) {
+        if (TaskCommand.HELP == cmd) {
             processHelpCommand(msg);
-        } else if (TaskCommand.NEW_TASK == command) {
+        } else if (TaskCommand.NEW_TASK == cmd) {
             processNewTaskCommand(user, msg);
-        } else if (TaskCommand.MY_TASKS == command) {
+        } else if (TaskCommand.MY_TASKS == cmd) {
             processMyTasksCommand(user, msg);
-        } else if (TaskCommand.DONE_TASK == command) {
+        } else if (TaskCommand.DONE_TASK == cmd) {
             processDoneTaskCommand(user, msg);
+        } else if (TaskCommand.BACK == cmd) {
+            processBackCommand(user, msg);
+            processHelpCommand(msg);
         } else {
             var responseMessage = "Если вы видите это сообщение, " +
                     "значит разработчик забыл подключить " +
@@ -60,10 +63,11 @@ public class TaskServiceImpl implements TaskService {
 
     @Override
     public void processHelpCommand(Message msg) {
-        Map<TaskCommand, String> cmdDesc = new LinkedHashMap<>();
+        Map<Object, String> cmdDesc = new LinkedHashMap<>();
+        cmdDesc.put(BasicCommand.MAIN, "вернуться в главное меню");
         cmdDesc.put(TaskCommand.NEW_TASK, "создать простую задачу без привязки ко времени");
-        cmdDesc.put(TaskCommand.DONE_TASK, "отметить задачу выполненной");
         cmdDesc.put(TaskCommand.MY_TASKS, "получить список своих задач");
+        cmdDesc.put(TaskCommand.DONE_TASK, "отметить задачу выполненной");
         cmdDesc.put(TaskCommand.HELP, "получить список доступных команд");
 
         var responseMessage = "Список доступных команд:" + cmdDesc.entrySet()
@@ -77,6 +81,20 @@ public class TaskServiceImpl implements TaskService {
     public void processNewTaskCommand(AppUser user, Message msg) {
         String responseMessage;
         if (BotState.WAIT_TASK == user.getState()) {
+            if (TaskCommand.isCommandPattern(msg.getText())) {
+                var cmd = TaskCommand.fromValue(msg.getText());
+                if (cmd != null) {
+                    processBackCommand(user, msg);
+
+                    if (TaskCommand.BACK == cmd) {
+                        processHelpCommand(msg);
+                    } else {
+                        processCommand(user, msg);
+                    }
+                    return;
+                }
+            }
+
             AppTask transientAppTask = AppTask.builder()
                     .description(msg.getText())
                     .creator(user)
@@ -84,7 +102,7 @@ public class TaskServiceImpl implements TaskService {
             appTaskJpaRepository.save(transientAppTask);
             responseMessage = String.format("" +
                     "Записали 😉 Что-то ещё?%n%n" +
-                    "%s - выйти", ServiceCommand.CANCEL);
+                    "%s - назад", TaskCommand.BACK);
         } else {
             user.setState(BotState.WAIT_TASK);
             appUserJpaRepository.save(user);
@@ -118,6 +136,20 @@ public class TaskServiceImpl implements TaskService {
     public void processDoneTaskCommand(AppUser user, Message msg) {
         String responseMessage;
         if (BotState.DONE_TASK == user.getState()) {
+            if (TaskCommand.isCommandPattern(msg.getText())) {
+                var cmd = TaskCommand.fromValue(msg.getText());
+                if (cmd != null) {
+                    processBackCommand(user, msg);
+
+                    if (TaskCommand.BACK == cmd) {
+                        processHelpCommand(msg);
+                    } else {
+                        processCommand(user, msg);
+                    }
+                    return;
+                }
+            }
+
             var tasks = user.getTasks();
 
             var choose = msg.getText();
@@ -138,22 +170,23 @@ public class TaskServiceImpl implements TaskService {
 
             tasks.remove(taskNumber - 1);
             appUserJpaRepository.save(user);
-
             if (tasks.isEmpty()) {
                 responseMessage = String.format("" +
                                 "Готово! Вычеркнули задачу %d " +
                                 "из списка задач, больше задач нет 🙃",
                         taskNumber);
-
-                user.setState(BotState.TASK_MODE);
-                appUserJpaRepository.save(user);
+                msgSender.send(responseMessage, msg.getChatId());
+                processBackCommand(user, msg);
+                processHelpCommand(msg);
+                return;
             } else {
+                processMyTasksCommand(user, msg);
                 responseMessage = String.format("" +
                                 "Готово! Вычеркнули задачу %d " +
                                 "из списка задач, отметить ещё одну?%n" +
                                 "%n%s - выйти",
                         taskNumber,
-                        ServiceCommand.CANCEL);
+                        TaskCommand.BACK);
             }
         } else {
             var tasks = user.getTasks();
@@ -163,10 +196,25 @@ public class TaskServiceImpl implements TaskService {
                 msgSender.send(responseMessage, msg.getChatId());
                 return;
             }
+            processMyTasksCommand(user, msg);
 
             user.setState(BotState.DONE_TASK);
             appUserJpaRepository.save(user);
             responseMessage = "Какую задачу вычеркнуть? (1 - " + tasks.size() + ")";
+        }
+
+        msgSender.send(responseMessage, msg.getChatId());
+    }
+
+    @Override
+    public void processBackCommand(AppUser user, Message msg) {
+        String responseMessage;
+        if (BotState.TASK_MODE == user.getState()) {
+            responseMessage = "Вы уже в режиме задач 😉";
+        } else {
+            user.setState(BotState.TASK_MODE);
+            appUserJpaRepository.save(user);
+            responseMessage = "Вернули вас назад!";
         }
 
         msgSender.send(responseMessage, msg.getChatId());

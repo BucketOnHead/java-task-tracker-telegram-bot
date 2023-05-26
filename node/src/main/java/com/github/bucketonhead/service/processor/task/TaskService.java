@@ -12,4 +12,6 @@ public interface TaskService extends CommandProcessor {
     void processMyTasksCommand(AppUser user, Message msg);
 
     void processDoneTaskCommand(AppUser user, Message msg);
+
+    void processBackCommand(AppUser user, Message msg);
 }

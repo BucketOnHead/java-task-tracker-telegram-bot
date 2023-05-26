@@ -6,7 +6,8 @@ public enum TaskCommand {
     HELP("help"),
     NEW_TASK("task"),
     MY_TASKS("tasks"),
-    DONE_TASK("donetask");
+    DONE_TASK("donetask"),
+    BACK("back");
     public static final String PREFIX = "/";
     private final String command;
 
