@@ -4,7 +4,7 @@ import com.github.bucketonhead.dao.AppUserJpaRepository;
 import com.github.bucketonhead.entity.AppUser;
 import com.github.bucketonhead.entity.enums.BotState;
 import com.github.bucketonhead.service.processor.basic.BasicService;
-import com.github.bucketonhead.service.processor.basic.enums.BasicCommand;
+import com.github.bucketonhead.service.processor.main.enums.AppCommand;
 import com.github.bucketonhead.service.sender.MessageSender;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,25 +26,25 @@ public class BasicServiceImpl implements BasicService {
 
     @Override
     public void processCommand(AppUser user, Message msg) {
-        if (!BasicCommand.isCommandPattern(msg.getText())) {
+        if (!AppCommand.isCommandPattern(msg.getText())) {
             var responseMessage = "Я бы с удовольствие поговорил, " +
                     "но я просто бот ☺";
             msgSender.send(responseMessage, msg.getChatId());
         }
 
-        var command = BasicCommand.fromValue(msg.getText());
+        var command = AppCommand.fromValue(msg.getText());
         if (command == null) {
             var responseMessage = "Команда не распознана!";
             msgSender.sendError(responseMessage, msg.getChatId());
         }
 
-        if (BasicCommand.START == command) {
+        if (AppCommand.START == command) {
             processStartCommand(user, msg);
-        } else if (BasicCommand.HELP == command) {
+        } else if (AppCommand.HELP == command) {
             processHelpCommand(msg);
-        } else if (BasicCommand.MAIN == command) {
+        } else if (AppCommand.MAIN == command) {
             processMainCommand(user, msg);
-        } else if (BasicCommand.TASK_MODE == command) {
+        } else if (AppCommand.TASK_MODE == command) {
             processTaskModeCommand(user, msg);
         } else {
             var text = "Если вы видите это сообщение, " +
@@ -79,9 +79,9 @@ public class BasicServiceImpl implements BasicService {
 
     @Override
     public void processHelpCommand(Message msg) {
-        Map<BasicCommand, String> commandDescription = new LinkedHashMap<>();
-        commandDescription.put(BasicCommand.TASK_MODE, "перейти в режим управления задачами");
-        commandDescription.put(BasicCommand.HELP, "получить список доступных команд");
+        Map<AppCommand, String> commandDescription = new LinkedHashMap<>();
+        commandDescription.put(AppCommand.TASK_MODE, "перейти в режим управления задачами");
+        commandDescription.put(AppCommand.HELP, "получить список доступных команд");
 
         var responseMessage = "Список доступных команд:" + commandDescription.entrySet()
                 .stream()
@@ -98,7 +98,7 @@ public class BasicServiceImpl implements BasicService {
             responseMessage = "" +
                     "Добро пожаловать 🥰\n" +
                     "\n" +
-                    "Используйте " + BasicCommand.HELP +
+                    "Используйте " + AppCommand.HELP +
                     " чтобы узнать, что я умею 😊";
         } else {
             // TODO: убрать удаление!!!

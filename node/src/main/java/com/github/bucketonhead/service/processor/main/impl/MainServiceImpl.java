@@ -6,8 +6,8 @@ import com.github.bucketonhead.entity.AppUser;
 import com.github.bucketonhead.entity.RawData;
 import com.github.bucketonhead.entity.enums.BotState;
 import com.github.bucketonhead.service.processor.basic.BasicService;
-import com.github.bucketonhead.service.processor.basic.enums.BasicCommand;
 import com.github.bucketonhead.service.processor.main.MainService;
+import com.github.bucketonhead.service.processor.main.enums.AppCommand;
 import com.github.bucketonhead.service.processor.task.TaskService;
 import com.github.bucketonhead.service.sender.MessageSender;
 import lombok.RequiredArgsConstructor;
@@ -30,12 +30,12 @@ public class MainServiceImpl implements MainService {
         var msg = update.getMessage();
         var appUser = findOrSaveAppUser(msg.getFrom());
 
-        var cmd = BasicCommand.fromValue(msg.getText());
-        if (BasicCommand.MAIN == cmd) {
+        var cmd = AppCommand.fromValue(msg.getText());
+        if (AppCommand.MAIN == cmd) {
             basicService.processMainCommand(appUser, msg);
             basicService.processHelpCommand(msg);
             return;
-        } else if (BasicCommand.TASK_MODE == cmd) {
+        } else if (AppCommand.TASK_MODE == cmd) {
             basicService.processTaskModeCommand(appUser, msg);
             taskService.processHelpCommand(msg);
             return;
