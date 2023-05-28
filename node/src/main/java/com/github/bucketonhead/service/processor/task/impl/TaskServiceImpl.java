@@ -28,36 +28,152 @@ public class TaskServiceImpl implements TaskService {
     @Override
     public void processCommand(AppUser user, Message msg) {
         if (!AppCommand.isCommandPattern(msg.getText())) {
-            var responseMessage = "Я бы с удовольствие поговорил, " +
-                    "но я просто бот ☺";
-            msgSender.send(responseMessage, msg.getChatId());
+            processNotCommand(msg);
             return;
         }
 
         var cmd = AppCommand.fromValue(msg.getText());
         if (cmd == null) {
-            var responseMessage = "Команда не распознана!";
-            msgSender.sendError(responseMessage, msg.getChatId());
-            return;
-        }
-
-        if (AppCommand.HELP == cmd) {
-            processHelpCommand(msg);
-        } else if (AppCommand.NEW_TASK == cmd) {
-            processNewTaskCommand(user, msg);
-        } else if (AppCommand.MY_TASKS == cmd) {
-            processMyTasksCommand(user, msg);
-        } else if (AppCommand.DONE_TASK == cmd) {
-            processDoneTaskCommand(user, msg);
+            processBadCommand(msg);
         } else if (AppCommand.BACK == cmd) {
             processBackCommand(user, msg);
             processHelpCommand(msg);
+        } else if (AppCommand.DONE_TASK == cmd) {
+            processDoneTaskCommand(user, msg);
+        } else if (AppCommand.HELP == cmd) {
+            processHelpCommand(msg);
+        } else if (AppCommand.MY_TASKS == cmd) {
+            processMyTasksCommand(user, msg);
+        } else if (AppCommand.NEW_TASK == cmd) {
+            processNewTaskCommand(user, msg);
         } else {
-            var responseMessage = "Если вы видите это сообщение, " +
-                    "значит разработчик забыл подключить " +
-                    "эту функциональность, попробуйте позже!";
-            msgSender.sendError(responseMessage, msg.getChatId());
+            processNotImplemented(msg);
         }
+    }
+
+    private void processNotCommand(Message msg) {
+        var text = "Я бы с удовольствие поговорил, " +
+                "но я просто бот, выполняющий команды ☺";
+        msgSender.send(text, msg.getChatId());
+    }
+
+    private void processBadCommand(Message msg) {
+        var text = "Команда не распознана!";
+        msgSender.sendError(text, msg.getChatId());
+    }
+
+    private void processNotImplemented(Message msg) {
+        var text = "Если вы видите это сообщение, " +
+                "значит разработчик забыл подключить " +
+                "эту функциональность, попробуйте позже!";
+        msgSender.sendError(text, msg.getChatId());
+    }
+
+    @Override
+    public void processBackCommand(AppUser user, Message msg) {
+        String responseMessage;
+        if (BotState.TASK_MODE == user.getState()) {
+            responseMessage = "Вы уже в режиме задач 😉";
+        } else {
+            user.setState(BotState.TASK_MODE);
+            appUserJpaRepository.save(user);
+
+            responseMessage = "Вернули вас назад!";
+        }
+
+        msgSender.send(responseMessage, msg.getChatId());
+    }
+
+    @Override
+    public void processDoneTaskCommand(AppUser user, Message msg) {
+        if (BotState.DONE_TASK == user.getState()) {
+            var cmd = AppCommand.fromValue(msg.getText());
+            if (cmd != null) {
+                if (AppCommand.BACK == cmd) {
+                    processBackCommand(user, msg);
+                    processHelpCommand(msg);
+                } else {
+                    processBackCommand(user, msg);
+                    processCommand(user, msg);
+                }
+                return;
+            }
+
+            processDeleteTask(user, msg);
+        } else {
+            var tasks = user.getTasks();
+            if (tasks.isEmpty()) {
+                processNoTasks(msg);
+                return;
+            }
+
+            user.setState(BotState.DONE_TASK);
+            appUserJpaRepository.save(user);
+
+            processMyTasksCommand(user, msg);
+            var text = "Какую задачу вычеркнуть? " +
+                    "(от 1 до " + tasks.size() + ")";
+            msgSender.send(text, msg.getChatId());
+        }
+    }
+
+    private void processDeleteTask(AppUser user, Message msg) {
+        int taskNumber = processChooseTaskNumber(user, msg);
+        if (taskNumber == -1) {
+            return;
+        }
+
+        var tasks = user.getTasks();
+
+        tasks.remove(taskNumber - 1);
+        appUserJpaRepository.save(user);
+
+        if (tasks.isEmpty()) {
+            var text = "Готово! Вычеркнули задачу, больше задач нет 🙃";
+            msgSender.send(text, msg.getChatId());
+            processBackCommand(user, msg);
+            processHelpCommand(msg);
+        } else {
+            processMyTasksCommand(user, msg);
+            var text = "Готово! Вычеркнули задачу " +
+                    "из списка задач, отметить ещё одну?\n\n" +
+                    AppCommand.BACK + " - вернуться назад";
+            msgSender.send(text, msg.getChatId());
+        }
+    }
+
+    private int processChooseTaskNumber(AppUser user, Message msg) {
+        int taskNumber;
+        try {
+            taskNumber = Integer.parseInt(msg.getText());
+            if (taskNumber < 1 || taskNumber > user.getTasks().size()) {
+                processUnknownTaskNumber(user, msg);
+                return -1;
+            }
+        } catch (NumberFormatException ex) {
+            processBadTaskNumber(user, msg);
+            return -1;
+        }
+
+        return taskNumber;
+    }
+
+    private void processUnknownTaskNumber(AppUser user, Message msg) {
+        var text = "Неверный номер задачи! Укажите число " +
+                "от 1 до " + user.getTasks().size();
+        msgSender.sendError(text, msg.getChatId());
+    }
+
+    private void processBadTaskNumber(AppUser user, Message msg) {
+        var text = "Нужно указать номер задачи " +
+                "от 1 до " + user.getTasks().size();
+        msgSender.sendError(text, msg.getChatId());
+    }
+
+    private void processNoTasks(Message msg) {
+        var text = "У вас нет ни одной задачи 🥺\n\n" +
+                AppCommand.NEW_TASK + " - создать задачу";
+        msgSender.send(text, msg.getChatId());
     }
 
     @Override
@@ -69,153 +185,66 @@ public class TaskServiceImpl implements TaskService {
         cmdDesc.put(AppCommand.DONE_TASK, "отметить задачу выполненной");
         cmdDesc.put(AppCommand.HELP, "получить список доступных команд");
 
-        var responseMessage = "Список доступных команд:" + cmdDesc.entrySet()
+        var text = "Список доступных команд:" + cmdDesc.entrySet()
                 .stream()
                 .map(entry -> String.format("%n%n%s - %s.", entry.getKey(), entry.getValue()))
                 .collect(Collectors.joining());
-        msgSender.send(responseMessage, msg.getChatId());
-    }
-
-    @Override
-    public void processNewTaskCommand(AppUser user, Message msg) {
-        String responseMessage;
-        if (BotState.WAIT_TASK == user.getState()) {
-            if (AppCommand.isCommandPattern(msg.getText())) {
-                var cmd = AppCommand.fromValue(msg.getText());
-                if (cmd != null) {
-                    processBackCommand(user, msg);
-
-                    if (AppCommand.BACK == cmd) {
-                        processHelpCommand(msg);
-                    } else {
-                        processCommand(user, msg);
-                    }
-                    return;
-                }
-            }
-
-            AppTask transientAppTask = AppTask.builder()
-                    .description(msg.getText())
-                    .creator(user)
-                    .build();
-            appTaskJpaRepository.save(transientAppTask);
-            responseMessage = String.format("" +
-                    "Записали 😉 Что-то ещё?%n%n" +
-                    "%s - назад", AppCommand.BACK);
-        } else {
-            user.setState(BotState.WAIT_TASK);
-            appUserJpaRepository.save(user);
-            responseMessage = "Что записать?";
-        }
-
-        msgSender.send(responseMessage, msg.getChatId());
+        msgSender.send(text, msg.getChatId());
     }
 
     @Override
     public void processMyTasksCommand(AppUser user, Message msg) {
-        String responseMessage;
+        String text;
         var tasks = user.getTasks();
         if (tasks == null || tasks.isEmpty()) {
-            responseMessage = "Вы ещё не создали ни одной задачи 🥺\n\n" +
+            text = "Вы ещё не создали ни одной задачи 🥺\n\n" +
                     AppCommand.NEW_TASK + " - создать задачу";
         } else {
-            StringBuilder sb = new StringBuilder();
-            sb.append("Ваши задачи:");
+            StringBuilder sb = new StringBuilder("Ваши задачи:");
             for (int i = 0; i < tasks.size(); i++) {
                 sb.append(String.format("%n%n📌 Задача#%d%n", i + 1));
                 sb.append(tasks.get(i).getDescription());
             }
-            responseMessage = sb.toString();
+            text = sb.toString();
         }
 
-        msgSender.send(responseMessage, msg.getChatId());
+        msgSender.send(text, msg.getChatId());
     }
 
     @Override
-    public void processDoneTaskCommand(AppUser user, Message msg) {
-        String responseMessage;
-        if (BotState.DONE_TASK == user.getState()) {
-            if (AppCommand.isCommandPattern(msg.getText())) {
-                var cmd = AppCommand.fromValue(msg.getText());
-                if (cmd != null) {
+    public void processNewTaskCommand(AppUser user, Message msg) {
+        if (BotState.WAIT_TASK == user.getState()) {
+            var cmd = AppCommand.fromValue(msg.getText());
+            if (cmd != null) {
+                if (AppCommand.BACK == cmd) {
                     processBackCommand(user, msg);
-
-                    if (AppCommand.BACK == cmd) {
-                        processHelpCommand(msg);
-                    } else {
-                        processCommand(user, msg);
-                    }
-                    return;
+                    processHelpCommand(msg);
+                } else {
+                    processBackCommand(user, msg);
+                    processCommand(user, msg);
                 }
-            }
-
-            var tasks = user.getTasks();
-
-            var choose = msg.getText();
-            int taskNumber;
-            try {
-                taskNumber = Integer.parseInt(choose);
-            } catch (NumberFormatException e) {
-                responseMessage = "Нужно указать номер задачи (1 - " + tasks.size() + ")";
-                msgSender.sendError(responseMessage, msg.getChatId());
                 return;
             }
 
-            if (taskNumber < 1 || taskNumber > tasks.size()) {
-                responseMessage = "Неверный номер задачи! Укажите число от 1 до " + tasks.size();
-                msgSender.sendError(responseMessage, msg.getChatId());
-                return;
-            }
-
-            tasks.remove(taskNumber - 1);
-            appUserJpaRepository.save(user);
-            if (tasks.isEmpty()) {
-                responseMessage = String.format("" +
-                                "Готово! Вычеркнули задачу %d " +
-                                "из списка задач, больше задач нет 🙃",
-                        taskNumber);
-                msgSender.send(responseMessage, msg.getChatId());
-                processBackCommand(user, msg);
-                processHelpCommand(msg);
-                return;
-            } else {
-                processMyTasksCommand(user, msg);
-                responseMessage = String.format("" +
-                                "Готово! Вычеркнули задачу %d " +
-                                "из списка задач, отметить ещё одну?%n" +
-                                "%n%s - выйти",
-                        taskNumber,
-                        AppCommand.BACK);
-            }
+            processNewTask(user, msg);
         } else {
-            var tasks = user.getTasks();
-            if (tasks.isEmpty()) {
-                responseMessage = "У вас нет ни одной задачи 🥺\n\n" +
-                        AppCommand.NEW_TASK + " - создать задачу";
-                msgSender.send(responseMessage, msg.getChatId());
-                return;
-            }
-            processMyTasksCommand(user, msg);
-
-            user.setState(BotState.DONE_TASK);
+            user.setState(BotState.WAIT_TASK);
             appUserJpaRepository.save(user);
-            responseMessage = "Какую задачу вычеркнуть? (1 - " + tasks.size() + ")";
-        }
 
-        msgSender.send(responseMessage, msg.getChatId());
+            var text = "Что записать?";
+            msgSender.send(text, msg.getChatId());
+        }
     }
 
-    @Override
-    public void processBackCommand(AppUser user, Message msg) {
-        String responseMessage;
-        if (BotState.TASK_MODE == user.getState()) {
-            responseMessage = "Вы уже в режиме задач 😉";
-        } else {
-            user.setState(BotState.TASK_MODE);
-            appUserJpaRepository.save(user);
-            responseMessage = "Вернули вас назад!";
-        }
+    private void processNewTask(AppUser user, Message msg) {
+        AppTask transientAppTask = AppTask.builder()
+                .description(msg.getText())
+                .creator(user)
+                .build();
+        appTaskJpaRepository.save(transientAppTask);
 
-        msgSender.send(responseMessage, msg.getChatId());
+        var text = "Записали 😉 Что-то ещё?\n\n" +
+                AppCommand.BACK + " - назад";
+        msgSender.send(text, msg.getChatId());
     }
 }

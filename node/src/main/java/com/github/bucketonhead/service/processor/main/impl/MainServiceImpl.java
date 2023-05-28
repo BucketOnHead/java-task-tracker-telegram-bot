@@ -39,6 +39,9 @@ public class MainServiceImpl implements MainService {
             basicService.processTaskModeCommand(appUser, msg);
             taskService.processHelpCommand(msg);
             return;
+        } else if (AppCommand.START == cmd) {
+            basicService.processStartCommand(appUser, msg);
+            return;
         }
 
         if (BotState.BASIC == appUser.getState()) {
