@@ -7,7 +7,6 @@ import com.github.bucketonhead.service.processor.basic.BasicService;
 import com.github.bucketonhead.service.processor.main.enums.AppCommand;
 import com.github.bucketonhead.service.sender.MessageSender;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.objects.Message;
 
@@ -18,7 +17,6 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
-@Slf4j
 @RequiredArgsConstructor
 public class BasicServiceImpl implements BasicService {
     private final MessageSender msgSender;
@@ -27,18 +25,14 @@ public class BasicServiceImpl implements BasicService {
     @Override
     public void processCommand(AppUser user, Message msg) {
         if (!AppCommand.isCommandPattern(msg.getText())) {
-            var responseMessage = "Я бы с удовольствие поговорил, " +
-                    "но я просто бот ☺";
-            msgSender.send(responseMessage, msg.getChatId());
+            processNotCommand(msg);
+            return;
         }
 
         var command = AppCommand.fromValue(msg.getText());
         if (command == null) {
-            var responseMessage = "Команда не распознана!";
-            msgSender.sendError(responseMessage, msg.getChatId());
-        }
-
-        if (AppCommand.START == command) {
+            processBadCommand(msg);
+        } else if (AppCommand.START == command) {
             processStartCommand(user, msg);
         } else if (AppCommand.HELP == command) {
             processHelpCommand(msg);
@@ -47,66 +41,94 @@ public class BasicServiceImpl implements BasicService {
         } else if (AppCommand.TASK_MODE == command) {
             processTaskModeCommand(user, msg);
         } else {
-            var text = "Если вы видите это сообщение, " +
-                    "значит разработчик забыл подключить " +
-                    "эту функциональность, попробуйте позже!";
-            msgSender.sendError(text, msg.getChatId());
+            processNotImplemented(msg);
         }
     }
 
-    @Override
-    public void processTaskModeCommand(AppUser user, Message msg) {
-        user.setState(BotState.TASK_MODE);
-        appUserJpaRepository.save(user);
-
-        var responseMessage = "Перевёл вас в режим управления задачами";
-        msgSender.send(responseMessage, msg.getChatId());
+    private void processNotCommand(Message msg) {
+        var text = "Я бы с удовольствие поговорил, " +
+                "но я просто бот, выполняющий команды ☺";
+        msgSender.send(text, msg.getChatId());
     }
 
-    @Override
-    public void processMainCommand(AppUser user, Message msg) {
-        String responseMessage;
-        if (BotState.BASIC == user.getState()) {
-            responseMessage = "Вы уже в главном меню 😉";
-        } else {
-            user.setState(BotState.BASIC);
-            appUserJpaRepository.save(user);
-            responseMessage = "Вернули вас в главное меню!";
-        }
-
-        msgSender.send(responseMessage, msg.getChatId());
+    private void processBadCommand(Message msg) {
+        var text = "Команда не распознана!";
+        msgSender.sendError(text, msg.getChatId());
     }
 
-    @Override
-    public void processHelpCommand(Message msg) {
-        Map<AppCommand, String> commandDescription = new LinkedHashMap<>();
-        commandDescription.put(AppCommand.TASK_MODE, "перейти в режим управления задачами");
-        commandDescription.put(AppCommand.HELP, "получить список доступных команд");
-
-        var responseMessage = "Список доступных команд:" + commandDescription.entrySet()
-                .stream()
-                .map(entry -> String.format("%n%n%s - %s.", entry.getKey(), entry.getValue()))
-                .collect(Collectors.joining());
-        msgSender.send(responseMessage, msg.getChatId());
+    private void processNotImplemented(Message msg) {
+        var text = "Если вы видите это сообщение, " +
+                "значит разработчик забыл подключить " +
+                "эту функциональность, попробуйте позже!";
+        msgSender.sendError(text, msg.getChatId());
     }
 
     @Override
     public void processStartCommand(AppUser user, Message msg) {
-        String responseMessage;
         var regDuration = Duration.between(user.getFirstLoginDate(), LocalDateTime.now());
         if (regDuration.toSeconds() < 3) {
-            responseMessage = "" +
-                    "Добро пожаловать 🥰\n" +
-                    "\n" +
-                    "Используйте " + AppCommand.HELP +
-                    " чтобы узнать, что я умею 😊";
+            processWelcome(msg);
         } else {
-            // TODO: убрать удаление!!!
-            responseMessage = "А я Вас помню 🙃\n\n" +
-                    "🧨 Обнулил ваш аккаунт 🧨";
-            appUserJpaRepository.deleteById(user.getId());
+            processReturn(user, msg);
+        }
+    }
+
+    private void processWelcome(Message msg) {
+        var text = "Добро пожаловать 🥰\n\n" +
+                "Используйте " + AppCommand.HELP +
+                " чтобы узнать, что я умею 😊";
+        msgSender.send(text, msg.getChatId());
+    }
+
+    // TODO: убрать удаление!!!
+    private void processReturn(AppUser user, Message msg) {
+        appUserJpaRepository.deleteById(user.getId());
+
+        var text = "А я Вас помню 🙃\n\n" +
+                "🧨 Обнулил ваш аккаунт 🧨";
+        msgSender.send(text, msg.getChatId());
+    }
+
+    @Override
+    public void processTaskModeCommand(AppUser user, Message msg) {
+        String text;
+        if (BotState.TASK_MODE == user.getState()) {
+            text = "Вы уже в режиме задач 🙂";
+        } else {
+            user.setState(BotState.TASK_MODE);
+            appUserJpaRepository.save(user);
+
+            text = "Перевёл вас в режим управления задачами";
         }
 
-        msgSender.send(responseMessage, msg.getChatId());
+        msgSender.send(text, msg.getChatId());
+    }
+
+    @Override
+    public void processMainCommand(AppUser user, Message msg) {
+        String text;
+        if (BotState.BASIC == user.getState()) {
+            text = "Вы уже в главном меню 😉";
+        } else {
+            user.setState(BotState.BASIC);
+            appUserJpaRepository.save(user);
+
+            text = "Вернули вас в главное меню!";
+        }
+
+        msgSender.send(text, msg.getChatId());
+    }
+
+    @Override
+    public void processHelpCommand(Message msg) {
+        Map<AppCommand, String> cmdDesc = new LinkedHashMap<>();
+        cmdDesc.put(AppCommand.TASK_MODE, "перейти в режим управления задачами");
+        cmdDesc.put(AppCommand.HELP, "получить список доступных команд");
+
+        var text = "Список доступных команд:" + cmdDesc.entrySet()
+                .stream()
+                .map(entry -> String.format("%n%n%s - %s.", entry.getKey(), entry.getValue()))
+                .collect(Collectors.joining());
+        msgSender.send(text, msg.getChatId());
     }
 }
