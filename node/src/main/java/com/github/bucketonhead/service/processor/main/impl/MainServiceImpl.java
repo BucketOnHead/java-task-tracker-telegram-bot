@@ -49,14 +49,14 @@ public class MainServiceImpl implements MainService {
         } else if (BotState.TASK_MODE == appUser.getState()) {
             taskService.processCommand(appUser, msg);
         } else if (BotState.WAIT_TASK == appUser.getState()) {
-             taskService.processNewTaskCommand(appUser, msg);
+            taskService.processNewTaskCommand(appUser, msg);
         } else if (BotState.DONE_TASK == appUser.getState()) {
             taskService.processDoneTaskCommand(appUser, msg);
         } else {
-            var responseMessage = "Разработчик допустил ошибку при реализации " +
+            var text = "Разработчик допустил ошибку при реализации " +
                     "этой функциональности, попробуйте позже! " +
                     "А пока вернём вас в главное меню ☺";
-            msgSender.sendError(responseMessage, msg.getChatId());
+            msgSender.sendError(text, msg.getChatId());
             basicService.processMainCommand(appUser, msg);
         }
     }
