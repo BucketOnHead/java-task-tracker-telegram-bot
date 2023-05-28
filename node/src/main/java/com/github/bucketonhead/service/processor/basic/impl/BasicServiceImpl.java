@@ -32,12 +32,12 @@ public class BasicServiceImpl implements BasicService {
         var command = AppCommand.fromValue(msg.getText());
         if (command == null) {
             processBadCommand(msg);
-        } else if (AppCommand.START == command) {
-            processStartCommand(user, msg);
         } else if (AppCommand.HELP == command) {
             processHelpCommand(msg);
         } else if (AppCommand.MAIN == command) {
             processMainCommand(user, msg);
+        } else if (AppCommand.START == command) {
+            processStartCommand(user, msg);
         } else if (AppCommand.TASK_MODE == command) {
             processTaskModeCommand(user, msg);
         } else {
@@ -61,6 +61,34 @@ public class BasicServiceImpl implements BasicService {
                 "значит разработчик забыл подключить " +
                 "эту функциональность, попробуйте позже!";
         msgSender.sendError(text, msg.getChatId());
+    }
+
+    @Override
+    public void processHelpCommand(Message msg) {
+        Map<AppCommand, String> cmdDesc = new LinkedHashMap<>();
+        cmdDesc.put(AppCommand.TASK_MODE, "перейти в режим управления задачами");
+        cmdDesc.put(AppCommand.HELP, "получить список доступных команд");
+
+        var text = "Список доступных команд:" + cmdDesc.entrySet()
+                .stream()
+                .map(entry -> String.format("%n%n%s - %s.", entry.getKey(), entry.getValue()))
+                .collect(Collectors.joining());
+        msgSender.send(text, msg.getChatId());
+    }
+
+    @Override
+    public void processMainCommand(AppUser user, Message msg) {
+        String text;
+        if (BotState.BASIC == user.getState()) {
+            text = "Вы уже в главном меню 😉";
+        } else {
+            user.setState(BotState.BASIC);
+            appUserJpaRepository.save(user);
+
+            text = "Вернули вас в главное меню!";
+        }
+
+        msgSender.send(text, msg.getChatId());
     }
 
     @Override
@@ -101,34 +129,6 @@ public class BasicServiceImpl implements BasicService {
             text = "Перевёл вас в режим управления задачами";
         }
 
-        msgSender.send(text, msg.getChatId());
-    }
-
-    @Override
-    public void processMainCommand(AppUser user, Message msg) {
-        String text;
-        if (BotState.BASIC == user.getState()) {
-            text = "Вы уже в главном меню 😉";
-        } else {
-            user.setState(BotState.BASIC);
-            appUserJpaRepository.save(user);
-
-            text = "Вернули вас в главное меню!";
-        }
-
-        msgSender.send(text, msg.getChatId());
-    }
-
-    @Override
-    public void processHelpCommand(Message msg) {
-        Map<AppCommand, String> cmdDesc = new LinkedHashMap<>();
-        cmdDesc.put(AppCommand.TASK_MODE, "перейти в режим управления задачами");
-        cmdDesc.put(AppCommand.HELP, "получить список доступных команд");
-
-        var text = "Список доступных команд:" + cmdDesc.entrySet()
-                .stream()
-                .map(entry -> String.format("%n%n%s - %s.", entry.getKey(), entry.getValue()))
-                .collect(Collectors.joining());
         msgSender.send(text, msg.getChatId());
     }
 }
