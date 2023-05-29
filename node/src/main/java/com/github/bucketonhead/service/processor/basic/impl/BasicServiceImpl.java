@@ -6,6 +6,7 @@ import com.github.bucketonhead.entity.enums.BotState;
 import com.github.bucketonhead.service.processor.basic.BasicService;
 import com.github.bucketonhead.service.processor.main.enums.AppCommand;
 import com.github.bucketonhead.service.sender.MessageSender;
+import com.github.bucketonhead.utils.ResponseMessageUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.objects.Message;
@@ -29,16 +30,18 @@ public class BasicServiceImpl implements BasicService {
             return;
         }
 
-        var command = AppCommand.fromValue(msg.getText());
-        if (command == null) {
+        var cmd = AppCommand.fromValue(msg.getText());
+        if (cmd == null) {
             processBadCommand(msg);
-        } else if (AppCommand.HELP == command) {
+        } else if (AppCommand.HELP == cmd) {
             processHelpCommand(msg);
-        } else if (AppCommand.MAIN == command) {
+        } else if (AppCommand.MAIN == cmd) {
             processMainCommand(user, msg);
-        } else if (AppCommand.START == command) {
+        } else if (AppCommand.PROFILE == cmd) {
+            processProfileCommand(user, msg);
+        } else if (AppCommand.START == cmd) {
             processStartCommand(user, msg);
-        } else if (AppCommand.TASK_MODE == command) {
+        } else if (AppCommand.TASK_MODE == cmd) {
             processTaskModeCommand(user, msg);
         } else {
             processNotImplemented(msg);
@@ -67,6 +70,7 @@ public class BasicServiceImpl implements BasicService {
     public void processHelpCommand(Message msg) {
         Map<AppCommand, String> cmdDesc = new LinkedHashMap<>();
         cmdDesc.put(AppCommand.TASK_MODE, "перейти в режим управления задачами");
+        cmdDesc.put(AppCommand.PROFILE, "посмотреть свой профиль");
         cmdDesc.put(AppCommand.HELP, "получить список доступных команд");
 
         var text = "Список доступных команд:" + cmdDesc.entrySet()
@@ -89,6 +93,11 @@ public class BasicServiceImpl implements BasicService {
         }
 
         msgSender.send(text, msg.getChatId());
+    }
+
+    private void processProfileCommand(AppUser user, Message msg) {
+        var text = ResponseMessageUtils.buildProfileInfo(user);
+        msgSender.sendParseMarkdown(text, msg.getChatId());
     }
 
     @Override

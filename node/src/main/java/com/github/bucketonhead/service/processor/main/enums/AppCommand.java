@@ -4,13 +4,14 @@ public enum AppCommand {
     // ===== GLOBAL
     START("start"),
     MAIN("main"),
+    TASK_MODE("taskmode"),
 
     // ===== COMMON
     HELP("help"),
     BACK("back"),
 
     // ===== MAIN MODE
-    TASK_MODE("taskmode"),
+    PROFILE("profile"),
 
     // ===== TASK MODE
     NEW_TASK("task"),

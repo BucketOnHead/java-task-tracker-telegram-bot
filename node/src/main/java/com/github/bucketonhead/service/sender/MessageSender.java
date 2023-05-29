@@ -1,6 +1,7 @@
 package com.github.bucketonhead.service.sender;
 
 import com.github.bucketonhead.utils.ResponseMessageUtils;
+import org.telegram.telegrambots.meta.api.methods.ParseMode;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 
 public interface MessageSender {
@@ -15,7 +16,16 @@ public interface MessageSender {
     }
 
     default void sendError(String text, Long chatId) {
-        text = ResponseMessageUtils.buildErrorMessage(text);
+        text = ResponseMessageUtils.buildError(text);
         send(text, chatId);
+    }
+
+    default void sendParseMarkdown(String text, Long chatId) {
+        SendMessage msg = SendMessage.builder()
+                .chatId(chatId)
+                .text(text)
+                .parseMode(ParseMode.MARKDOWN)
+                .build();
+        send(msg);
     }
 }
