@@ -8,7 +8,10 @@ import java.time.LocalDateTime;
 
 @UtilityClass
 public class ResponseMessageUtils {
-    private final String ERROR_PATTERN = "⚠  Ошибка%n%n%s";
+    private final String ERROR_PATTERN = "" +
+            "⚠  Ошибка%n" +
+            "%n" +
+            "%s";
     private final String PROFILE_INFO_PATTERN = "" +
             "Ваш профиль ⚡%n" +
             "%n" +
