@@ -8,14 +8,13 @@ import com.github.bucketonhead.entity.enums.BotState;
 import com.github.bucketonhead.service.processor.main.enums.AppCommand;
 import com.github.bucketonhead.service.processor.task.TaskService;
 import com.github.bucketonhead.service.sender.MessageSender;
+import com.github.bucketonhead.utils.ResponseMessageUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.objects.Message;
 
 import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -178,17 +177,14 @@ public class TaskServiceImpl implements TaskService {
 
     @Override
     public void processHelpCommand(Message msg) {
-        Map<Object, String> cmdDesc = new LinkedHashMap<>();
+        var cmdDesc = new LinkedHashMap<AppCommand, String>();
         cmdDesc.put(AppCommand.MAIN, "вернуться в главное меню");
         cmdDesc.put(AppCommand.NEW_TASK, "создать простую задачу без привязки ко времени");
         cmdDesc.put(AppCommand.MY_TASKS, "получить список своих задач");
         cmdDesc.put(AppCommand.DONE_TASK, "отметить задачу выполненной");
         cmdDesc.put(AppCommand.HELP, "получить список доступных команд");
 
-        var text = "Список доступных команд:" + cmdDesc.entrySet()
-                .stream()
-                .map(entry -> String.format("%n%n%s - %s.", entry.getKey(), entry.getValue()))
-                .collect(Collectors.joining());
+        var text = ResponseMessageUtils.buildHelp(cmdDesc);
         msgSender.send(text, msg.getChatId());
     }
 

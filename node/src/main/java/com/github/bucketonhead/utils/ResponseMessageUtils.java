@@ -1,10 +1,13 @@
 package com.github.bucketonhead.utils;
 
 import com.github.bucketonhead.entity.AppUser;
+import com.github.bucketonhead.service.processor.main.enums.AppCommand;
 import lombok.experimental.UtilityClass;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.LinkedHashMap;
+import java.util.stream.Collectors;
 
 @UtilityClass
 public class ResponseMessageUtils {
@@ -45,5 +48,15 @@ public class ResponseMessageUtils {
         long days = Duration.between(user.getFirstLoginDate(), LocalDateTime.now()).toDays();
 
         return String.format(PROFILE_INFO_PATTERN, id, nick, name, days);
+    }
+
+    public String buildHelp(LinkedHashMap<AppCommand, String> cmdDesc) {
+        return "Список доступных команд:" + cmdDesc.entrySet()
+                .stream()
+                .map(entry -> String.format(
+                        "%n%n%s - %s.",
+                        entry.getKey(),
+                        entry.getValue()))
+                .collect(Collectors.joining());
     }
 }

@@ -14,8 +14,6 @@ import org.telegram.telegrambots.meta.api.objects.Message;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -68,15 +66,12 @@ public class BasicServiceImpl implements BasicService {
 
     @Override
     public void processHelpCommand(Message msg) {
-        Map<AppCommand, String> cmdDesc = new LinkedHashMap<>();
-        cmdDesc.put(AppCommand.TASK_MODE, "перейти в режим управления задачами");
+        var cmdDesc = new LinkedHashMap<AppCommand, String>();
         cmdDesc.put(AppCommand.PROFILE, "посмотреть свой профиль");
+        cmdDesc.put(AppCommand.TASK_MODE, "перейти в режим управления задачами");
         cmdDesc.put(AppCommand.HELP, "получить список доступных команд");
 
-        var text = "Список доступных команд:" + cmdDesc.entrySet()
-                .stream()
-                .map(entry -> String.format("%n%n%s - %s.", entry.getKey(), entry.getValue()))
-                .collect(Collectors.joining());
+        var text = ResponseMessageUtils.buildHelp(cmdDesc);
         msgSender.send(text, msg.getChatId());
     }
 
