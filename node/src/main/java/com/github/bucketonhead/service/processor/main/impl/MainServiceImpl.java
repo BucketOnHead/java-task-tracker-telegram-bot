@@ -32,7 +32,7 @@ public class MainServiceImpl implements MainService {
         var msg = update.getMessage();
         var appUser = findOrSaveAppUser(msg.getFrom());
 
-        var cmd = AppCommand.fromValue(msg.getText());
+        var cmd = AppCommand.parseAppCommand(msg.getText());
         if (AppCommand.MAIN == cmd) {
             basicService.processMainCommand(appUser, msg);
             basicService.processHelpCommand(msg);

@@ -28,7 +28,7 @@ public class BasicServiceImpl implements BasicService {
             return;
         }
 
-        var cmd = AppCommand.fromValue(msg.getText());
+        var cmd = AppCommand.parseAppCommand(msg.getText());
         if (cmd == null) {
             processBadCommand(msg);
         } else if (AppCommand.HELP == cmd) {

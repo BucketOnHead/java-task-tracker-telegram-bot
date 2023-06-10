@@ -31,7 +31,7 @@ public class TaskServiceImpl implements TaskService {
             return;
         }
 
-        var cmd = AppCommand.fromValue(msg.getText());
+        var cmd = AppCommand.parseAppCommand(msg.getText());
         if (cmd == null) {
             processBadCommand(msg);
         } else if (AppCommand.BACK == cmd) {
@@ -86,7 +86,7 @@ public class TaskServiceImpl implements TaskService {
     @Override
     public void processDoneTaskCommand(AppUser user, Message msg) {
         if (BotState.DONE_TASK == user.getState()) {
-            var cmd = AppCommand.fromValue(msg.getText());
+            var cmd = AppCommand.parseAppCommand(msg.getText());
             if (cmd != null) {
                 if (AppCommand.BACK == cmd) {
                     processBackCommand(user, msg);
@@ -210,7 +210,7 @@ public class TaskServiceImpl implements TaskService {
     @Override
     public void processNewTaskCommand(AppUser user, Message msg) {
         if (BotState.WAIT_TASK == user.getState()) {
-            var cmd = AppCommand.fromValue(msg.getText());
+            var cmd = AppCommand.parseAppCommand(msg.getText());
             if (cmd != null) {
                 if (AppCommand.BACK == cmd) {
                     processBackCommand(user, msg);

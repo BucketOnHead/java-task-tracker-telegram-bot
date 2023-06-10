@@ -1,34 +1,35 @@
 package com.github.bucketonhead.service.processor.main.enums;
 
 public enum AppCommand {
-    // ===== GLOBAL
+
+    // GLOBAL
     START("start"),
     MAIN("main"),
     TASK_MODE("taskmode"),
 
-    // ===== COMMON
+    // COMMON
     HELP("help"),
     BACK("back"),
 
-    // ===== MAIN MODE
+    // MAIN MODE
     PROFILE("profile"),
 
-    // ===== TASK MODE
+    // TASK MODE
     NEW_TASK("task"),
     MY_TASKS("tasks"),
     DONE_TASK("donetask");
 
     public static final String PREFIX = "/";
-    private final String value;
+    private final String val;
 
-    AppCommand(String cmd) {
-        this.value = PREFIX + cmd;
+    AppCommand(String val) {
+        this.val = PREFIX + val;
     }
 
-    public static AppCommand fromValue(String value) {
+    public static AppCommand parseAppCommand(String str) {
         AppCommand foundCommand = null;
         for (var command : AppCommand.values()) {
-            if (command.value.equals(value)) {
+            if (command.val.equals(str)) {
                 foundCommand = command;
                 break;
             }
@@ -43,6 +44,6 @@ public enum AppCommand {
 
     @Override
     public String toString() {
-        return value;
+        return val;
     }
 }
