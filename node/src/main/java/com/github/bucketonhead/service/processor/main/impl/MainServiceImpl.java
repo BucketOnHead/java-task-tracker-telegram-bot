@@ -15,6 +15,8 @@ import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.User;
 
+import java.util.Optional;
+
 @Service
 @RequiredArgsConstructor
 public class MainServiceImpl implements MainService {
@@ -69,8 +71,9 @@ public class MainServiceImpl implements MainService {
     }
 
     private AppUser findOrSaveAppUser(User tgUser) {
-        AppUser persistenceAppUser = appUserJpaRepository.findByTelegramUserId(tgUser.getId());
-        if (persistenceAppUser == null) {
+        AppUser appUser;
+        Optional<AppUser> persistenceAppUser = appUserJpaRepository.findByTelegramUserId(tgUser.getId());
+        if (persistenceAppUser.isEmpty()) {
             AppUser transientAppUser = AppUser.builder()
                     .telegramUserId(tgUser.getId())
                     .firstName(tgUser.getFirstName())
@@ -80,8 +83,11 @@ public class MainServiceImpl implements MainService {
                     .isActive(Boolean.TRUE)
                     .state(BotState.BASIC)
                     .build();
-            persistenceAppUser = appUserJpaRepository.save(transientAppUser);
+            appUser = appUserJpaRepository.save(transientAppUser);
+        } else {
+            appUser = persistenceAppUser.get();
         }
-        return persistenceAppUser;
+
+        return appUser;
     }
 }
