@@ -79,8 +79,6 @@ public class MainServiceImpl implements MainService {
                     .firstName(tgUser.getFirstName())
                     .lastName(tgUser.getLastName())
                     .username(tgUser.getUserName())
-                    // TODO: поменять на false после реализации email-сервиса
-                    .isActive(Boolean.TRUE)
                     .state(BotState.BASIC)
                     .build();
             appUser = appUserJpaRepository.save(transientAppUser);

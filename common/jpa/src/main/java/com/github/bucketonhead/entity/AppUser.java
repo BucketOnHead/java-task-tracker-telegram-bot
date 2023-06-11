@@ -30,7 +30,6 @@ public class AppUser {
     private String lastName;
     private String username;
     private String email;
-    private Boolean isActive;
 
     @Enumerated(EnumType.STRING)
     private BotState state;
