@@ -1,6 +1,6 @@
 package com.github.bucketonhead.service.rabbitmq.impl;
 
-import com.github.bucketonhead.constants.RabbitQueue;
+import com.github.bucketonhead.consts.RabbitQueue;
 import com.github.bucketonhead.service.processor.main.MainService;
 import com.github.bucketonhead.service.rabbitmq.ConsumerService;
 import lombok.RequiredArgsConstructor;

@@ -1,4 +1,4 @@
-package com.github.bucketonhead.constants;
+package com.github.bucketonhead.consts;
 
 import lombok.experimental.UtilityClass;
 

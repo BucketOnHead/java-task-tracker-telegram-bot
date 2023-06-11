@@ -1,6 +1,6 @@
 package com.github.bucketonhead.config;
 
-import com.github.bucketonhead.constants.RabbitQueue;
+import com.github.bucketonhead.consts.RabbitQueue;
 import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.amqp.support.converter.MessageConverter;

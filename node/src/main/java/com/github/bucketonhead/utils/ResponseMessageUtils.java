@@ -1,5 +1,6 @@
 package com.github.bucketonhead.utils;
 
+import com.github.bucketonhead.consts.MessagePattern;
 import com.github.bucketonhead.entity.AppUser;
 import com.github.bucketonhead.service.processor.main.enums.AppCommand;
 import lombok.experimental.UtilityClass;
@@ -12,21 +13,9 @@ import java.util.stream.Collectors;
 
 @UtilityClass
 public class ResponseMessageUtils {
-    private final String ERROR_PATTERN = "" +
-            "⚠  Ошибка%n" +
-            "%n" +
-            "%s";
-    private final String PROFILE_INFO_PATTERN = "" +
-            "Ваш профиль ⚡%n" +
-            "%n" +
-            "ID:  `%d`%n" +
-            "Ник:  %s%n" +
-            "Имя:  %s%n" +
-            "%n" +
-            "Вы с нами уже %d дн! ♥";
 
     public String buildError(String text) {
-        return String.format(ERROR_PATTERN, text);
+        return String.format(MessagePattern.ERROR, text);
     }
 
     public String buildProfileInfo(AppUser user) {
@@ -35,7 +24,7 @@ public class ResponseMessageUtils {
         String fullName = getFullName(user);
         Duration duration = Duration.between(user.getFirstLoginDate(), LocalDateTime.now());
 
-        return String.format(PROFILE_INFO_PATTERN, id, username, fullName, duration.toDays());
+        return String.format(MessagePattern.PROFILE_INFO, id, username, fullName, duration.toDays());
     }
 
     private static String getUsername(AppUser user) {
