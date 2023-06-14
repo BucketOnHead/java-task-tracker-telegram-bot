@@ -15,13 +15,14 @@
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <task-tracker-telegram-bot-common-consts.version>1.0-SNAPSHOT</task-tracker-telegram-bot-common-consts.version>
     </properties>
 
     <dependencies>
         <dependency>
             <groupId>com.github.bucketonhead</groupId>
-            <artifactId>task-tracker-telegram-bot-common-rabbitmq</artifactId>
-            <version>${common-rabbitmq.version}</version>
+            <artifactId>task-tracker-telegram-bot-common-consts</artifactId>
+            <version>${task-tracker-telegram-bot-common-consts.version}</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>

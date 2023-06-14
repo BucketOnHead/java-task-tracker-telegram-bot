@@ -12,8 +12,8 @@
     <packaging>pom</packaging>
 
     <modules>
-        <module>rabbitmq</module>
         <module>jpa</module>
+        <module>consts</module>
     </modules>
 
     <properties>

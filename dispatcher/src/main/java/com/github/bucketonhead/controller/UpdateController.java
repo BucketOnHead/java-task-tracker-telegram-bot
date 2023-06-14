@@ -1,5 +1,6 @@
 package com.github.bucketonhead.controller;
 
+import com.github.bucketonhead.consts.MessagePattern;
 import com.github.bucketonhead.service.rabbitmq.UpdateProducer;
 import com.github.bucketonhead.utils.MessageUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -57,7 +58,7 @@ public class UpdateController {
     }
 
     private void setUnsupportedMessageTypeView(Update update) {
-        String text = "⚠  Ошибка\n\nПолучен не поддерживаемый тип сообщения!";
+        String text = String.format(MessagePattern.ERROR, "Неподдерживаемый тип сообщения 🚫");
         setView(MessageUtils.buildTextMessage(update, text));
     }
 }
