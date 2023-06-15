@@ -15,7 +15,7 @@
 - [Установка](#установка)
 - [Запуск](#запуск)
 
-<div style="text-align: right">
+<div class="text-right">
     <a href="#оглавление">назад</a>
 </div>
 
@@ -26,7 +26,7 @@
 - JDK 11
 - Apache Maven
 
-<div style="text-align: right">
+<div class="text-right">
     <a href="#инструкция-по-установке">назад</a>
 </div>
 
@@ -55,7 +55,7 @@ cd java-task-tracker-telegram-bot
 mvn clean install
 ```
 
-<div style="text-align: right">
+<div class="text-right">
     <a href="#инструкция-по-установке">назад</a>
 </div>
 
@@ -65,6 +65,6 @@ mvn clean install
 docker-compose up -d
 ```
 
-<div style="text-align: right">
+<div class="text-right">
     <a href="#инструкция-по-установке">назад</a>
 </div>
