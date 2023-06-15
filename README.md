@@ -15,9 +15,9 @@
 - [Установка](#установка)
 - [Запуск](#запуск)
 
-<div class="text-right">
+<p align="right">
     <a href="#оглавление">назад</a>
-</div>
+</p>
 
 ### Требования
 
@@ -26,9 +26,9 @@
 - JDK 11
 - Apache Maven
 
-<div class="text-right">
+<p align="right">
     <a href="#инструкция-по-установке">назад</a>
-</div>
+</p>
 
 ### Установка
 
@@ -55,9 +55,9 @@ cd java-task-tracker-telegram-bot
 mvn clean install
 ```
 
-<div class="text-right">
+<p align="right">
     <a href="#инструкция-по-установке">назад</a>
-</div>
+</p>
 
 ### Запуск
 После установки проекта, вы можете запустить его с помощью команды:
@@ -65,6 +65,6 @@ mvn clean install
 docker-compose up -d
 ```
 
-<div class="text-right">
+<p align="right">
     <a href="#инструкция-по-установке">назад</a>
-</div>
+</p>
