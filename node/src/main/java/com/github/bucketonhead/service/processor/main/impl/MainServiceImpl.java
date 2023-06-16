@@ -44,6 +44,9 @@ public class MainServiceImpl implements MainService {
         } else if (AppCommand.START == cmd) {
             basicService.processStartCommand(appUser, msg);
             return;
+        } else if (AppCommand.DELETE == cmd) {
+            basicService.processDeleteCommand(appUser, msg);
+            return;
         }
 
         if (BotState.BASIC == appUser.getState()) {

@@ -6,6 +6,7 @@ public enum AppCommand {
     START("start"),
     MAIN("main"),
     TASK_MODE("taskmode"),
+    DELETE("delete"),
 
     // COMMON
     HELP("help"),

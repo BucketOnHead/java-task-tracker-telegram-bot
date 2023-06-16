@@ -12,4 +12,6 @@ public interface BasicService extends CommandProcessor {
     void processHelpCommand(Message msg);
 
     void processStartCommand(AppUser user, Message msg);
+
+    void processDeleteCommand(AppUser user, Message msg);
 }

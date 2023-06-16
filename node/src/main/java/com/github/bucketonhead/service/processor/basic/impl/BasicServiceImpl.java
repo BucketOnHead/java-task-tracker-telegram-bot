@@ -101,7 +101,7 @@ public class BasicServiceImpl implements BasicService {
         if (regDuration.toSeconds() < 3) {
             processWelcome(msg);
         } else {
-            processReturn(user, msg);
+            processReturn(msg);
         }
     }
 
@@ -112,12 +112,12 @@ public class BasicServiceImpl implements BasicService {
         msgSender.send(text, msg.getChatId());
     }
 
-    // TODO: убрать удаление!!!
-    private void processReturn(AppUser user, Message msg) {
-        appUserJpaRepository.deleteById(user.getId());
-
+    private void processReturn(Message msg) {
         var text = "А я Вас помню 🙃\n\n" +
-                "🧨 Обнулил ваш аккаунт 🧨";
+                "Используйте " + AppCommand.DELETE +
+                ", если хотите начать всё с чистого листа ☠\n\n" +
+                "❗ Будьте внимательны восстановить аккаунт " +
+                "будет невозможно 😱";
         msgSender.send(text, msg.getChatId());
     }
 
@@ -133,6 +133,15 @@ public class BasicServiceImpl implements BasicService {
             text = "Перевёл вас в режим управления задачами";
         }
 
+        msgSender.send(text, msg.getChatId());
+    }
+
+    @Override
+    public void processDeleteCommand(AppUser user, Message msg) {
+        appUserJpaRepository.deleteById(user.getId());
+
+        var text = "Готово! С этого момента " +
+                "мы больше не знакомы 😔\n\n";
         msgSender.send(text, msg.getChatId());
     }
 }
