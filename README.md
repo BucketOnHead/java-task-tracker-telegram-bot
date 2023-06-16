@@ -1,4 +1,4 @@
-# TaskTrackifyBot
+# TaskTrackifyBot v1
 
 > TaskTrackifyBot - это телеграм-бот, предназначенный
 > для планирования задач и повышения продуктивности.
@@ -13,7 +13,7 @@
 
 ## Архитектура проекта
 
-![project_architecture.png](./.postman/project_architecture.png)
+![project_architecture.png](.readme/project_architecture.png)
 
 <p align="right">
     <a href="#Оглавление">назад</a>
