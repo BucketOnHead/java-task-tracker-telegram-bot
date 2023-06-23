@@ -1,6 +1,6 @@
 package com.github.bucketonhead.service.processor.basic;
 
-import com.github.bucketonhead.entity.AppUser;
+import com.github.bucketonhead.entity.user.AppUser;
 import com.github.bucketonhead.service.processor.CommandProcessor;
 import org.telegram.telegrambots.meta.api.objects.Message;
 
