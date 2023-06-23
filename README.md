@@ -57,7 +57,7 @@ TELEGRAM_BOT_TOKEN=YourBotToken
 ```
 
 <details>
-    <summary><h3>Описание переменных окружения:</h3></summary>
+    <summary>Описание переменных окружения:</summary>
 
 > ⚠ Предупреждение: Этот раздел может устареть со временем!
 
