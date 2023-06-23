@@ -2,9 +2,9 @@ package com.github.bucketonhead.service.processor.task.impl;
 
 import com.github.bucketonhead.dao.AppTaskJpaRepository;
 import com.github.bucketonhead.dao.AppUserJpaRepository;
-import com.github.bucketonhead.entity.task.AppTask;
-import com.github.bucketonhead.entity.user.AppUser;
-import com.github.bucketonhead.entity.user.enums.BotState;
+import com.github.bucketonhead.entity.AppTask;
+import com.github.bucketonhead.entity.AppUser;
+import com.github.bucketonhead.entity.enums.BotState;
 import com.github.bucketonhead.service.processor.main.enums.AppCommand;
 import com.github.bucketonhead.service.processor.task.TaskService;
 import com.github.bucketonhead.service.sender.MessageSender;
