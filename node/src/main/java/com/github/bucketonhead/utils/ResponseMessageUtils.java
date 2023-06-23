@@ -1,7 +1,7 @@
 package com.github.bucketonhead.utils;
 
 import com.github.bucketonhead.consts.MessagePattern;
-import com.github.bucketonhead.entity.AppUser;
+import com.github.bucketonhead.entity.user.AppUser;
 import com.github.bucketonhead.service.processor.main.enums.AppCommand;
 import lombok.experimental.UtilityClass;
 import org.apache.commons.lang3.StringUtils;
