@@ -43,6 +43,7 @@
 ### Установка
 
 1. Склонируйте проект с помощью команды:
+
 ```bash
 git clone https://github.com/BucketOnHead/java-task-tracker-telegram-bot
 ```
@@ -55,12 +56,31 @@ TELEGRAM_BOT_TOKEN=YourBotToken
 # and others
 ```
 
+<details>
+    <summary><h3>Описание переменных окружения:</h3></summary>
+
+> ⚠ Предупреждение: Этот раздел может устареть со временем!
+
+| Переменная окружения    | Описание                                  |
+|:------------------------|:------------------------------------------|
+| `TELEGRAM_BOT_USERNAME` | Имя вашего бота в Telegram                |
+| `TELEGRAM_BOT_TOKEN`    | Токен вашего бота в Telegram              |
+| `RABBITMQ_DEFAULT_USER` | Имя пользователя для RabbitMQ             |
+| `RABBITMQ_DEFAULT_PASS` | Пароль пользователя для RabbitMQ          |
+| `COMMON_DB_NAME`        | Имя общей базы данных                     |
+| `COMMON_DB_USER`        | Имя пользователя для общей базы данных    |
+| `COMMON_DB_PASSWORD`    | Пароль пользователя для общей базы данных |
+
+</details>
+
 3. Перейдите в директорию проекта:
+
 ```bash
 cd java-task-tracker-telegram-bot
 ```
 
 4. Соберите проект с помощью Apache Maven:
+
 ```bash
 mvn clean install
 ```
@@ -70,7 +90,9 @@ mvn clean install
 </p>
 
 ### Запуск
+
 После установки проекта, вы можете запустить его с помощью команды:
+
 ```bash
 docker-compose up -d
 ```
@@ -81,7 +103,7 @@ docker-compose up -d
 
 ## Функционал
 
-> ⚠ Внимание! Раздел может со временем устареть!
+> ⚠ Предупреждение: Этот раздел может устареть со временем!
 
 | Команда     | Функция                             |
 |:------------|:------------------------------------|
