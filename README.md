@@ -1,4 +1,4 @@
-# TaskTrackifyBot v1.0.1
+# TaskTrackifyBot v1.0.2
 
 > TaskTrackifyBot - это телеграм-бот, предназначенный
 > для планирования задач и повышения продуктивности.
