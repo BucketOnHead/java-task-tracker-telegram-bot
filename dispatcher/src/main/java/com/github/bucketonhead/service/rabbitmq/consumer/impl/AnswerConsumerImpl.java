@@ -1,8 +1,8 @@
-package com.github.bucketonhead.service.rabbitmq.impl;
+package com.github.bucketonhead.service.rabbitmq.consumer.impl;
 
 import com.github.bucketonhead.consts.RabbitQueue;
 import com.github.bucketonhead.controller.UpdateController;
-import com.github.bucketonhead.service.rabbitmq.AnswerConsumer;
+import com.github.bucketonhead.service.rabbitmq.consumer.AnswerConsumer;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
@@ -17,9 +17,9 @@ public class AnswerConsumerImpl implements AnswerConsumer {
 
     @Override
     @RabbitListener(queues = RabbitQueue.ANSWER_MESSAGE)
-    public void consume(SendMessage sendMessage) {
-        log.debug("Получено сообщение[text='{}'] из очереди[name='{}'] для чата[id={}]",
-                sendMessage.getText(), RabbitQueue.ANSWER_MESSAGE, sendMessage.getChatId());
-        updateController.setView(sendMessage);
+    public void consume(SendMessage msg) {
+        log.info("Received sendMessage: chat_id={}, text='{}'", msg.getChatId(), msg.getText());
+        log.debug("Received sendMessage: {}", msg);
+        updateController.setView(msg);
     }
 }

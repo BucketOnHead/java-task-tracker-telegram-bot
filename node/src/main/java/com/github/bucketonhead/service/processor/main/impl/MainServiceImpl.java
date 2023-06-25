@@ -2,15 +2,16 @@ package com.github.bucketonhead.service.processor.main.impl;
 
 import com.github.bucketonhead.dao.AppUserJpaRepository;
 import com.github.bucketonhead.dao.RawDataJpaRepository;
-import com.github.bucketonhead.entity.AppUser;
+import com.github.bucketonhead.entity.user.AppUser;
 import com.github.bucketonhead.entity.RawData;
-import com.github.bucketonhead.entity.enums.BotState;
+import com.github.bucketonhead.entity.user.enums.BotState;
 import com.github.bucketonhead.service.processor.basic.BasicService;
 import com.github.bucketonhead.service.processor.main.MainService;
 import com.github.bucketonhead.service.processor.main.enums.AppCommand;
 import com.github.bucketonhead.service.processor.task.TaskService;
 import com.github.bucketonhead.service.sender.MessageSender;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.User;
@@ -18,6 +19,7 @@ import org.telegram.telegrambots.meta.api.objects.User;
 import java.util.Optional;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class MainServiceImpl implements MainService {
     private final MessageSender msgSender;
@@ -31,6 +33,8 @@ public class MainServiceImpl implements MainService {
         saveRawData(update);
         var msg = update.getMessage();
         var appUser = findOrSaveAppUser(msg.getFrom());
+        log.info("Processing command: app_user_id={}, msg_text='{}'", appUser.getId(), msg.getText());
+        log.debug("Processing command: {}, {}", appUser, msg);
 
         var cmd = AppCommand.parseAppCommand(msg.getText());
         if (AppCommand.MAIN == cmd) {
@@ -58,6 +62,7 @@ public class MainServiceImpl implements MainService {
         } else if (BotState.DONE_TASK == appUser.getState()) {
             taskService.processDoneTaskCommand(appUser, msg);
         } else {
+            log.error("Processing not implemented");
             var text = "Разработчик допустил ошибку при реализации " +
                     "этой функциональности, попробуйте позже! " +
                     "А пока вернём вас в главное меню ☺";
@@ -67,6 +72,8 @@ public class MainServiceImpl implements MainService {
     }
 
     private void saveRawData(Update update) {
+        log.info("Saving update: id={}", update.getUpdateId());
+        log.debug("Saving update: {}", update);
         RawData rawData = RawData.builder()
                 .event(update)
                 .build();
@@ -84,6 +91,8 @@ public class MainServiceImpl implements MainService {
                     .username(tgUser.getUserName())
                     .state(BotState.BASIC)
                     .build();
+            log.info("Saving app user: tg_id={}", tgUser.getId());
+            log.debug("Saving app user: {}", transientAppUser);
             appUser = appUserJpaRepository.save(transientAppUser);
         } else {
             appUser = persistenceAppUser.get();

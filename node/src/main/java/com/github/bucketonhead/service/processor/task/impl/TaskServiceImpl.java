@@ -2,9 +2,9 @@ package com.github.bucketonhead.service.processor.task.impl;
 
 import com.github.bucketonhead.dao.AppTaskJpaRepository;
 import com.github.bucketonhead.dao.AppUserJpaRepository;
-import com.github.bucketonhead.entity.AppTask;
-import com.github.bucketonhead.entity.AppUser;
-import com.github.bucketonhead.entity.enums.BotState;
+import com.github.bucketonhead.entity.task.AppTask;
+import com.github.bucketonhead.entity.user.AppUser;
+import com.github.bucketonhead.entity.user.enums.BotState;
 import com.github.bucketonhead.service.processor.main.enums.AppCommand;
 import com.github.bucketonhead.service.processor.task.TaskService;
 import com.github.bucketonhead.service.sender.MessageSender;
@@ -51,17 +51,20 @@ public class TaskServiceImpl implements TaskService {
     }
 
     private void processNotCommand(Message msg) {
+        log.info("Processing not command");
         var text = "Я бы с удовольствие поговорил, " +
                 "но я просто бот, выполняющий команды ☺";
         msgSender.send(text, msg.getChatId());
     }
 
     private void processBadCommand(Message msg) {
+        log.info("Processing bad command");
         var text = "Команда не распознана!";
         msgSender.sendError(text, msg.getChatId());
     }
 
     private void processNotImplemented(Message msg) {
+        log.error("Processing not implemented");
         var text = "Если вы видите это сообщение, " +
                 "значит разработчик забыл подключить " +
                 "эту функциональность, попробуйте позже!";
@@ -70,6 +73,7 @@ public class TaskServiceImpl implements TaskService {
 
     @Override
     public void processBackCommand(AppUser user, Message msg) {
+        log.info("Processing back command");
         String responseMessage;
         if (BotState.TASK_MODE == user.getState()) {
             responseMessage = "Вы уже в режиме задач 😉";
@@ -85,6 +89,7 @@ public class TaskServiceImpl implements TaskService {
 
     @Override
     public void processDoneTaskCommand(AppUser user, Message msg) {
+        log.info("Processing done task command");
         if (BotState.DONE_TASK == user.getState()) {
             var cmd = AppCommand.parseAppCommand(msg.getText());
             if (cmd != null) {
@@ -117,6 +122,7 @@ public class TaskServiceImpl implements TaskService {
     }
 
     private void processDeleteTask(AppUser user, Message msg) {
+        log.info("Processing delete task command");
         int taskNumber = processChooseTaskNumber(user, msg);
         if (taskNumber == -1) {
             return;
@@ -142,6 +148,7 @@ public class TaskServiceImpl implements TaskService {
     }
 
     private int processChooseTaskNumber(AppUser user, Message msg) {
+        log.info("Processing choose task number");
         int taskNumber;
         try {
             taskNumber = Integer.parseInt(msg.getText());
@@ -158,18 +165,21 @@ public class TaskServiceImpl implements TaskService {
     }
 
     private void processUnknownTaskNumber(AppUser user, Message msg) {
+        log.info("Processing unknown task number");
         var text = "Неверный номер задачи! Укажите число " +
                 "от 1 до " + user.getTasks().size();
         msgSender.sendError(text, msg.getChatId());
     }
 
     private void processBadTaskNumber(AppUser user, Message msg) {
+        log.info("Processing bad task number");
         var text = "Нужно указать номер задачи " +
                 "от 1 до " + user.getTasks().size();
         msgSender.sendError(text, msg.getChatId());
     }
 
     private void processNoTasks(Message msg) {
+        log.info("Processing no tasks");
         var text = "У вас нет ни одной задачи 🥺\n\n" +
                 AppCommand.NEW_TASK + " - создать задачу";
         msgSender.send(text, msg.getChatId());
@@ -177,6 +187,7 @@ public class TaskServiceImpl implements TaskService {
 
     @Override
     public void processHelpCommand(Message msg) {
+        log.info("Processing help command");
         var cmdDesc = new LinkedHashMap<AppCommand, String>();
         cmdDesc.put(AppCommand.MAIN, "вернуться в главное меню");
         cmdDesc.put(AppCommand.NEW_TASK, "создать простую задачу без привязки ко времени");
@@ -190,6 +201,7 @@ public class TaskServiceImpl implements TaskService {
 
     @Override
     public void processMyTasksCommand(AppUser user, Message msg) {
+        log.info("Processing my tasks command");
         String text;
         var tasks = user.getTasks();
         if (tasks == null || tasks.isEmpty()) {
@@ -209,6 +221,7 @@ public class TaskServiceImpl implements TaskService {
 
     @Override
     public void processNewTaskCommand(AppUser user, Message msg) {
+        log.info("Processing new task command");
         if (BotState.WAIT_TASK == user.getState()) {
             var cmd = AppCommand.parseAppCommand(msg.getText());
             if (cmd != null) {
@@ -233,6 +246,7 @@ public class TaskServiceImpl implements TaskService {
     }
 
     private void processNewTask(AppUser user, Message msg) {
+        log.info("Processing new task");
         AppTask transientAppTask = AppTask.builder()
                 .description(msg.getText())
                 .creator(user)
