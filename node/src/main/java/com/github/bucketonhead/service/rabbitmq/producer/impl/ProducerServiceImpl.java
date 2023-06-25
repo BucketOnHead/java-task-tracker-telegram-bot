@@ -1,7 +1,7 @@
-package com.github.bucketonhead.service.rabbitmq.impl;
+package com.github.bucketonhead.service.rabbitmq.producer.impl;
 
 import com.github.bucketonhead.consts.RabbitQueue;
-import com.github.bucketonhead.service.rabbitmq.ProducerService;
+import com.github.bucketonhead.service.rabbitmq.producer.ProducerService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -15,7 +15,9 @@ public class ProducerServiceImpl implements ProducerService {
     private final RabbitTemplate rabbitTemplate;
 
     @Override
-    public void producerAnswer(SendMessage sendMessage) {
-        rabbitTemplate.convertAndSend(RabbitQueue.ANSWER_MESSAGE, sendMessage);
+    public void producerAnswer(SendMessage msg) {
+        log.info("Producing message: chat_id={}, text='{}'", msg.getChatId(), msg.getText());
+        log.debug("Producing message: {}", msg);
+        rabbitTemplate.convertAndSend(RabbitQueue.ANSWER_MESSAGE, msg);
     }
 }

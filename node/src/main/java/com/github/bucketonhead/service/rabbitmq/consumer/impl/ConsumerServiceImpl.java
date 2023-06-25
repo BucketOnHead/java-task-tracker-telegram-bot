@@ -1,8 +1,8 @@
-package com.github.bucketonhead.service.rabbitmq.impl;
+package com.github.bucketonhead.service.rabbitmq.consumer.impl;
 
 import com.github.bucketonhead.consts.RabbitQueue;
 import com.github.bucketonhead.service.processor.main.MainService;
-import com.github.bucketonhead.service.rabbitmq.ConsumerService;
+import com.github.bucketonhead.service.rabbitmq.consumer.ConsumerService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
@@ -18,8 +18,9 @@ public class ConsumerServiceImpl implements ConsumerService {
     @Override
     @RabbitListener(queues = RabbitQueue.TEXT_MESSAGE_UPDATE)
     public void consumeTextMessageUpdate(Update update) {
-        log.debug("Получен update от пользователя[id={}] из очереди {}",
-                update.getMessage().getFrom().getId(), RabbitQueue.TEXT_MESSAGE_UPDATE);
+        var msg = update.getMessage();
+        log.info("Received sendMessage: chat_id={}, text='{}'", msg.getChatId(), msg.getText());
+        log.debug("Received sendMessage: {}", msg);
         try {
             mainService.processTextMessage(update);
         } catch (RuntimeException ex) {

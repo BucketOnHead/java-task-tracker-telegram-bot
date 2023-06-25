@@ -8,6 +8,7 @@ import com.github.bucketonhead.service.processor.main.enums.AppCommand;
 import com.github.bucketonhead.service.sender.MessageSender;
 import com.github.bucketonhead.utils.ResponseMessageUtils;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.objects.Message;
 
@@ -16,6 +17,7 @@ import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class BasicServiceImpl implements BasicService {
     private final MessageSender msgSender;
@@ -47,17 +49,20 @@ public class BasicServiceImpl implements BasicService {
     }
 
     private void processNotCommand(Message msg) {
+        log.info("Processing not command");
         var text = "Я бы с удовольствие поговорил, " +
                 "но я просто бот, выполняющий команды ☺";
         msgSender.send(text, msg.getChatId());
     }
 
     private void processBadCommand(Message msg) {
+        log.info("Processing bad command");
         var text = "Команда не распознана!";
         msgSender.sendError(text, msg.getChatId());
     }
 
     private void processNotImplemented(Message msg) {
+        log.error("Processing not implemented");
         var text = "Если вы видите это сообщение, " +
                 "значит разработчик забыл подключить " +
                 "эту функциональность, попробуйте позже!";
@@ -66,6 +71,7 @@ public class BasicServiceImpl implements BasicService {
 
     @Override
     public void processHelpCommand(Message msg) {
+        log.info("Processing help command");
         var cmdDesc = new LinkedHashMap<AppCommand, String>();
         cmdDesc.put(AppCommand.PROFILE, "посмотреть свой профиль");
         cmdDesc.put(AppCommand.TASK_MODE, "перейти в режим управления задачами");
@@ -77,6 +83,7 @@ public class BasicServiceImpl implements BasicService {
 
     @Override
     public void processMainCommand(AppUser user, Message msg) {
+        log.info("Processing main command");
         String text;
         if (BotState.BASIC == user.getState()) {
             text = "Вы уже в главном меню 😉";
@@ -91,12 +98,14 @@ public class BasicServiceImpl implements BasicService {
     }
 
     private void processProfileCommand(AppUser user, Message msg) {
+        log.info("Processing profile command");
         var text = ResponseMessageUtils.buildProfileInfo(user);
         msgSender.sendParseMarkdown(text, msg.getChatId());
     }
 
     @Override
     public void processStartCommand(AppUser user, Message msg) {
+        log.info("Processing start command");
         var regDuration = Duration.between(user.getFirstLoginDate(), LocalDateTime.now());
         if (regDuration.toSeconds() < 3) {
             processWelcome(msg);
@@ -106,6 +115,7 @@ public class BasicServiceImpl implements BasicService {
     }
 
     private void processWelcome(Message msg) {
+        log.info("Processing welcome");
         var text = "Добро пожаловать 🥰\n\n" +
                 "Используйте " + AppCommand.HELP +
                 " чтобы узнать, что я умею 😊";
@@ -113,6 +123,7 @@ public class BasicServiceImpl implements BasicService {
     }
 
     private void processReturn(Message msg) {
+        log.info("Processing return");
         var text = "А я Вас помню 🙃\n\n" +
                 "Используйте " + AppCommand.DELETE +
                 ", если хотите начать всё с чистого листа ☠\n\n" +
@@ -123,6 +134,7 @@ public class BasicServiceImpl implements BasicService {
 
     @Override
     public void processTaskModeCommand(AppUser user, Message msg) {
+        log.info("Processing task mode command");
         String text;
         if (BotState.TASK_MODE == user.getState()) {
             text = "Вы уже в режиме задач 🙂";
@@ -138,6 +150,7 @@ public class BasicServiceImpl implements BasicService {
 
     @Override
     public void processDeleteCommand(AppUser user, Message msg) {
+        log.info("Processing delete command");
         appUserJpaRepository.deleteById(user.getId());
 
         var text = "Готово! С этого момента " +
