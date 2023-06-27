@@ -3,6 +3,7 @@ package com.github.bucketonhead.service.rabbitmq.consumer.impl;
 import com.github.bucketonhead.consts.RabbitQueue;
 import com.github.bucketonhead.service.processor.main.MainService;
 import com.github.bucketonhead.service.rabbitmq.consumer.ConsumerService;
+import com.github.bucketonhead.service.sender.MessageSender;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
@@ -14,6 +15,7 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 @RequiredArgsConstructor
 public class ConsumerServiceImpl implements ConsumerService {
     private final MainService mainService;
+    private final MessageSender messageSender;
 
     @Override
     @RabbitListener(queues = RabbitQueue.TEXT_MESSAGE_UPDATE)
@@ -24,7 +26,8 @@ public class ConsumerServiceImpl implements ConsumerService {
         try {
             mainService.processTextMessage(update);
         } catch (RuntimeException ex) {
-            log.error("main service error: {}", ex.getMessage());
+            log.error("Main service error: {}", ex.getMessage(), ex);
+            messageSender.send("Что-то пошло не по плану! 😱", msg.getChatId());
         }
     }
 }

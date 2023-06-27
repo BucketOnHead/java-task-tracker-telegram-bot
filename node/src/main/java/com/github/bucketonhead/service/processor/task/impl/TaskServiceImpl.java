@@ -1,5 +1,6 @@
 package com.github.bucketonhead.service.processor.task.impl;
 
+import com.github.bucketonhead.cache.AppCache;
 import com.github.bucketonhead.dao.AppTaskJpaRepository;
 import com.github.bucketonhead.dao.AppUserJpaRepository;
 import com.github.bucketonhead.entity.AppTask;
@@ -14,6 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.objects.Message;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 
 @Service
@@ -23,6 +25,7 @@ public class TaskServiceImpl implements TaskService {
     private final MessageSender msgSender;
     private final AppUserJpaRepository appUserJpaRepository;
     private final AppTaskJpaRepository appTaskJpaRepository;
+    private final AppCache<Long, AppUser> appUserCache;
 
     @Override
     public void processCommand(AppUser user, Message msg) {
@@ -79,7 +82,8 @@ public class TaskServiceImpl implements TaskService {
             responseMessage = "Вы уже в режиме задач 😉";
         } else {
             user.setState(BotState.TASK_MODE);
-            appUserJpaRepository.save(user);
+            var savedUser = appUserJpaRepository.save(user);
+            appUserCache.put(savedUser);
 
             responseMessage = "Вернули вас назад!";
         }
@@ -112,7 +116,8 @@ public class TaskServiceImpl implements TaskService {
             }
 
             user.setState(BotState.DONE_TASK);
-            appUserJpaRepository.save(user);
+            var savedUser = appUserJpaRepository.save(user);
+            appUserCache.put(savedUser);
 
             processMyTasksCommand(user, msg);
             var text = "Какую задачу вычеркнуть? " +
@@ -122,7 +127,7 @@ public class TaskServiceImpl implements TaskService {
     }
 
     private void processDeleteTask(AppUser user, Message msg) {
-        log.info("Processing delete task command");
+        log.info("Processing delete task");
         int taskNumber = processChooseTaskNumber(user, msg);
         if (taskNumber == -1) {
             return;
@@ -130,10 +135,14 @@ public class TaskServiceImpl implements TaskService {
 
         var tasks = user.getTasks();
 
-        tasks.remove(taskNumber - 1);
-        appUserJpaRepository.save(user);
+        var task = tasks.get(taskNumber - 1);
+        appTaskJpaRepository.deleteById(task.getId());
+
+        user.getTasks().remove(task);
+        appUserCache.put(user);
 
         if (tasks.isEmpty()) {
+            user.setTasks(null);
             var text = "Готово! Вычеркнули задачу, больше задач нет 🙃";
             msgSender.send(text, msg.getChatId());
             processBackCommand(user, msg);
@@ -238,7 +247,8 @@ public class TaskServiceImpl implements TaskService {
             processNewTask(user, msg);
         } else {
             user.setState(BotState.WAIT_TASK);
-            appUserJpaRepository.save(user);
+            var savedUser = appUserJpaRepository.save(user);
+            appUserCache.put(savedUser);
 
             var text = "Что записать?";
             msgSender.send(text, msg.getChatId());
@@ -251,7 +261,14 @@ public class TaskServiceImpl implements TaskService {
                 .description(msg.getText())
                 .creator(user)
                 .build();
-        appTaskJpaRepository.save(transientAppTask);
+        var savedTask = appTaskJpaRepository.save(transientAppTask);
+
+        if (user.getTasks() == null) {
+            var tasks = new ArrayList<AppTask>();
+            user.setTasks(tasks);
+        }
+        user.getTasks().add(savedTask);
+        appUserCache.put(user);
 
         var text = "Записали 😉 Что-то ещё?\n\n" +
                 AppCommand.BACK + " - назад";
