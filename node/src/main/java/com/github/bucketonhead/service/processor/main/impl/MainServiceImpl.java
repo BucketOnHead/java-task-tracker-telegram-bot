@@ -1,5 +1,6 @@
 package com.github.bucketonhead.service.processor.main.impl;
 
+import com.github.bucketonhead.cache.AppCache;
 import com.github.bucketonhead.dao.AppUserJpaRepository;
 import com.github.bucketonhead.dao.RawDataJpaRepository;
 import com.github.bucketonhead.entity.user.AppUser;
@@ -27,6 +28,7 @@ public class MainServiceImpl implements MainService {
     private final AppUserJpaRepository appUserJpaRepository;
     private final BasicService basicService;
     private final TaskService taskService;
+    private final AppCache<Long, AppUser> appUserCache;
 
     @Override
     public void processTextMessage(Update update) {
@@ -81,6 +83,11 @@ public class MainServiceImpl implements MainService {
     }
 
     private AppUser findOrSaveAppUser(User tgUser) {
+        Optional<AppUser> cachedAppUser = appUserCache.get(tgUser.getId());
+        if (cachedAppUser.isPresent()) {
+            return cachedAppUser.get();
+        }
+
         AppUser appUser;
         Optional<AppUser> persistenceAppUser = appUserJpaRepository.findByTelegramUserId(tgUser.getId());
         if (persistenceAppUser.isEmpty()) {
@@ -91,12 +98,13 @@ public class MainServiceImpl implements MainService {
                     .username(tgUser.getUserName())
                     .state(BotState.BASIC)
                     .build();
-            log.info("Saving app user: tg_id={}", tgUser.getId());
+            log.info("Saving app user: tg_user_id={}", tgUser.getId());
             log.debug("Saving app user: {}", transientAppUser);
             appUser = appUserJpaRepository.save(transientAppUser);
         } else {
             appUser = persistenceAppUser.get();
         }
+        appUserCache.put(appUser);
 
         return appUser;
     }

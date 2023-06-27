@@ -1,5 +1,6 @@
 package com.github.bucketonhead.service.processor.task.impl;
 
+import com.github.bucketonhead.cache.AppCache;
 import com.github.bucketonhead.dao.AppTaskJpaRepository;
 import com.github.bucketonhead.dao.AppUserJpaRepository;
 import com.github.bucketonhead.entity.task.AppTask;
@@ -23,6 +24,7 @@ public class TaskServiceImpl implements TaskService {
     private final MessageSender msgSender;
     private final AppUserJpaRepository appUserJpaRepository;
     private final AppTaskJpaRepository appTaskJpaRepository;
+    private final AppCache<Long, AppUser> appUserCache;
 
     @Override
     public void processCommand(AppUser user, Message msg) {
@@ -79,7 +81,8 @@ public class TaskServiceImpl implements TaskService {
             responseMessage = "Вы уже в режиме задач 😉";
         } else {
             user.setState(BotState.TASK_MODE);
-            appUserJpaRepository.save(user);
+            var savedUser = appUserJpaRepository.save(user);
+            appUserCache.put(savedUser);
 
             responseMessage = "Вернули вас назад!";
         }
@@ -112,7 +115,8 @@ public class TaskServiceImpl implements TaskService {
             }
 
             user.setState(BotState.DONE_TASK);
-            appUserJpaRepository.save(user);
+            var savedUser = appUserJpaRepository.save(user);
+            appUserCache.put(savedUser);
 
             processMyTasksCommand(user, msg);
             var text = "Какую задачу вычеркнуть? " +
@@ -131,7 +135,8 @@ public class TaskServiceImpl implements TaskService {
         var tasks = user.getTasks();
 
         tasks.remove(taskNumber - 1);
-        appUserJpaRepository.save(user);
+        var savedUser = appUserJpaRepository.save(user);
+        appUserCache.put(savedUser);
 
         if (tasks.isEmpty()) {
             var text = "Готово! Вычеркнули задачу, больше задач нет 🙃";
@@ -238,7 +243,8 @@ public class TaskServiceImpl implements TaskService {
             processNewTask(user, msg);
         } else {
             user.setState(BotState.WAIT_TASK);
-            appUserJpaRepository.save(user);
+            var savedUser = appUserJpaRepository.save(user);
+            appUserCache.put(savedUser);
 
             var text = "Что записать?";
             msgSender.send(text, msg.getChatId());
@@ -252,6 +258,7 @@ public class TaskServiceImpl implements TaskService {
                 .creator(user)
                 .build();
         appTaskJpaRepository.save(transientAppTask);
+        appUserCache.put(appUserJpaRepository.findById(user.getId()).get());
 
         var text = "Записали 😉 Что-то ещё?\n\n" +
                 AppCommand.BACK + " - назад";
