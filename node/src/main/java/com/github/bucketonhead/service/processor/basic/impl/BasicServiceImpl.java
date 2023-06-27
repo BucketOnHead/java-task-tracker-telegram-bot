@@ -1,5 +1,6 @@
 package com.github.bucketonhead.service.processor.basic.impl;
 
+import com.github.bucketonhead.cache.AppCache;
 import com.github.bucketonhead.dao.AppUserJpaRepository;
 import com.github.bucketonhead.entity.AppUser;
 import com.github.bucketonhead.entity.enums.BotState;
@@ -22,6 +23,7 @@ import java.util.LinkedHashMap;
 public class BasicServiceImpl implements BasicService {
     private final MessageSender msgSender;
     private final AppUserJpaRepository appUserJpaRepository;
+    private final AppCache<Long, AppUser> appUserCache;
 
     @Override
     public void processCommand(AppUser user, Message msg) {
@@ -89,7 +91,8 @@ public class BasicServiceImpl implements BasicService {
             text = "Вы уже в главном меню 😉";
         } else {
             user.setState(BotState.BASIC);
-            appUserJpaRepository.save(user);
+            var savedUser = appUserJpaRepository.save(user);
+            appUserCache.put(savedUser);
 
             text = "Вернули вас в главное меню!";
         }
@@ -140,7 +143,8 @@ public class BasicServiceImpl implements BasicService {
             text = "Вы уже в режиме задач 🙂";
         } else {
             user.setState(BotState.TASK_MODE);
-            appUserJpaRepository.save(user);
+            var savedUser = appUserJpaRepository.save(user);
+            appUserCache.put(savedUser);
 
             text = "Перевёл вас в режим управления задачами";
         }
@@ -152,6 +156,7 @@ public class BasicServiceImpl implements BasicService {
     public void processDeleteCommand(AppUser user, Message msg) {
         log.info("Processing delete command");
         appUserJpaRepository.deleteById(user.getId());
+        appUserCache.remove(user.getTelegramUserId());
 
         var text = "Готово! С этого момента " +
                 "мы больше не знакомы 😔\n\n";
