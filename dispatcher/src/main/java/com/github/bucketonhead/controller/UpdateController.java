@@ -1,7 +1,7 @@
 package com.github.bucketonhead.controller;
 
 import com.github.bucketonhead.consts.MessagePattern;
-import com.github.bucketonhead.service.rabbitmq.producer.UpdateProducer;
+import com.github.bucketonhead.service.rabbitmq.UpdateProducer;
 import com.github.bucketonhead.utils.MessageUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Lazy;
@@ -21,43 +21,40 @@ public class UpdateController {
         this.updateProducer = updateProducer;
     }
 
-    public void setView(SendMessage msg) {
-        log.info("View set: chat_id={}, text='{}'", msg.getChatId(), msg.getText());
-        log.debug("View set: {}", msg);
-        telegramBot.sendBotMessageIgnoreException(msg);
+    public void setView(SendMessage sendMessage) {
+        telegramBot.sendBotMessageIgnoreException(sendMessage);
+        log.debug("Отправлено сообщение[text='{}'] от бота в чат[id={}]",
+                sendMessage.getText(), sendMessage.getChatId());
     }
 
     public void processUpdate(Update update) {
         if (update == null) {
-            log.warn("Received null update");
+            log.error("Received update is null");
             return;
         }
 
-        log.info("Update processing: id={}", update.getUpdateId());
-        log.debug("Update processing: {}", update);
         if (update.hasMessage()) {
             distributeMessageByType(update);
         } else {
-            log.warn("Unsupported message type: {}", update);
+            log.error("Unsupported message type is received: " + update);
         }
     }
 
-    private void distributeMessageByType(Update upd) {
-        log.info("Update distributing: id={}", upd.getUpdateId());
-        log.debug("Update distributing: {}", upd);
-        var msg = upd.getMessage();
-        if (msg.hasText()) {
-            processTextMessage(upd);
+    private void distributeMessageByType(Update update) {
+        var message = update.getMessage();
+        if (message.hasText()) {
+            log.debug("Получено сообщение[text='{}'] от пользователя[id={}]",
+                    message.getText(), message.getFrom().getId());
+            processTextMessage(update);
         } else {
-            setUnsupportedMessageTypeView(upd);
+            log.error("Получен не поддерживаемый тип сообщения от пользователя[id={}]",
+                    message.getFrom().getId());
+            setUnsupportedMessageTypeView(update);
         }
     }
 
-    private void processTextMessage(Update upd) {
-        updateProducer.produceTextMessage(upd);
-        log.info("Update(TextMessage) processed: update_id={}, message_id={}",
-                upd.getUpdateId(), upd.getMessage().getMessageId());
-        log.debug("Update(TextMessage) processed: {}", upd);
+    private void processTextMessage(Update update) {
+        updateProducer.produceTextMessage(update);
     }
 
     private void setUnsupportedMessageTypeView(Update update) {
