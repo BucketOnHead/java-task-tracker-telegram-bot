@@ -35,7 +35,7 @@ public class AppUser {
     @Enumerated(EnumType.STRING)
     private BotState state;
 
-    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @OneToMany(fetch = FetchType.EAGER)
     @JoinColumn(name = "creator_id")
     private List<AppTask> tasks;
 }
