@@ -1,6 +1,6 @@
-**MIT License**
+### MIT License
 
-*Copyright (c) 2023 BucketOnHead*
+*Copyright © 2023 BucketOnHead*
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -22,9 +22,9 @@ SOFTWARE.
 
 ---
 
-**Лицензия MIT**
+### Лицензия MIT
 
-*Авторское право (с) 2023 BucketOnHead*
+*Авторское право © 2023 BucketOnHead*
 
 Данное программное обеспечение и сопутствующие документационные файлы (в
 дальнейшем "Программное обеспечение") предоставляются на условиях свободной
