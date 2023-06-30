@@ -1,5 +1,6 @@
-package com.github.bucketonhead.entity;
+package com.github.bucketonhead.entity.task;
 
+import com.github.bucketonhead.entity.user.AppUser;
 import lombok.*;
 
 import javax.persistence.*;

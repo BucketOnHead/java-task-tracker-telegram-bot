@@ -2,8 +2,8 @@ package com.github.bucketonhead.service.processor.basic.impl;
 
 import com.github.bucketonhead.cache.AppCache;
 import com.github.bucketonhead.dao.AppUserJpaRepository;
-import com.github.bucketonhead.entity.AppUser;
-import com.github.bucketonhead.entity.enums.BotState;
+import com.github.bucketonhead.entity.user.AppUser;
+import com.github.bucketonhead.entity.user.enums.BotState;
 import com.github.bucketonhead.service.processor.basic.BasicService;
 import com.github.bucketonhead.service.processor.main.enums.AppCommand;
 import com.github.bucketonhead.service.sender.MessageSender;
