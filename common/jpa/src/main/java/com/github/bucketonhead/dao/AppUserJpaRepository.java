@@ -1,6 +1,6 @@
 package com.github.bucketonhead.dao;
 
-import com.github.bucketonhead.entity.AppUser;
+import com.github.bucketonhead.entity.user.AppUser;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;

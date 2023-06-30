@@ -1,6 +1,7 @@
-package com.github.bucketonhead.entity;
+package com.github.bucketonhead.entity.user;
 
-import com.github.bucketonhead.entity.enums.BotState;
+import com.github.bucketonhead.entity.task.AppTask;
+import com.github.bucketonhead.entity.user.enums.BotState;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 

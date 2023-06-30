@@ -1,4 +1,4 @@
-package com.github.bucketonhead.entity.enums;
+package com.github.bucketonhead.entity.user.enums;
 
 public enum BotState {
     BASIC,
